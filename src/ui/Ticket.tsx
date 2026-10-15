@@ -41,51 +41,29 @@ export function Ticket({
         <div className="grid size-13 place-items-center overflow-hidden rounded-xl bg-route-soft text-route">
           {thumb ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={thumb}
-              alt=""
-              className="size-full object-cover object-top"
-            />
+            <img src={thumb} alt="" className="size-full object-cover object-top" />
           ) : (
             <Icon name={icon} className="size-6" />
           )}
         </div>
       </div>
       <div className="flex min-w-0 flex-col gap-1 p-3.5">
-        <p className="text-xs font-bold tracking-wider text-route uppercase">
-          {kind}
-        </p>
-        <h3 className="font-display text-lg leading-tight font-bold [overflow-wrap:anywhere]">
-          {title}
-        </h3>
-        {meta ? (
-          <p className="text-sm text-ink-soft [overflow-wrap:anywhere]">
-            {meta}
-          </p>
-        ) : null}
+        <p className="text-xs font-bold tracking-wider text-route uppercase">{kind}</p>
+        <h3 className="font-display text-lg leading-tight font-bold [overflow-wrap:anywhere]">{title}</h3>
+        {meta ? <p className="text-sm text-ink-soft [overflow-wrap:anywhere]">{meta}</p> : null}
         {when ? <p className="text-[0.95rem] font-semibold">{when}</p> : null}
-        {detail ? (
-          <p className="text-sm text-ink-soft [overflow-wrap:anywhere]">
-            {detail}
-          </p>
-        ) : null}
+        {detail ? <p className="text-sm text-ink-soft [overflow-wrap:anywhere]">{detail}</p> : null}
         {flag}
         {children}
       </div>
       <div className="ticket-stub flex min-w-32 flex-row items-center justify-between gap-2 px-3.5 py-2.5 min-[520px]:flex-col min-[520px]:items-end min-[520px]:py-3.5 min-[520px]:pl-4.5">
         <div className="mr-auto min-[520px]:mr-0 min-[520px]:text-right">
-          <div className="num font-display text-xl font-extrabold whitespace-nowrap">
-            {price}
-          </div>
-          {priceNote ? (
-            <p className="text-xs text-ink-soft">{priceNote}</p>
-          ) : null}
+          <div className="num font-display text-xl font-extrabold whitespace-nowrap">{price}</div>
+          {priceNote ? <p className="text-xs text-ink-soft">{priceNote}</p> : null}
         </div>
         {actions ? <div className="flex gap-0.5">{actions}</div> : null}
       </div>
-      {footer ? (
-        <div className="ticket-row perforated p-3.5">{footer}</div>
-      ) : null}
+      {footer ? <div className="ticket-row perforated p-3.5">{footer}</div> : null}
     </article>
   );
 }

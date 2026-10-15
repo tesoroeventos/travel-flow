@@ -96,3 +96,32 @@ Registro de cada decisión que no estaba fijada en la spec o el plan, con lo que
 - M7 gastos ordenados por fecha de carga en el repositorio (la página los ordena por fecha).
 - M8 el hash de contraseña se calcula aun con código inválido (intencional).
 - M9 sin largo máximo en campos de texto.
+
+## Ciclo 2: carga rápida con IA (2026-10-15)
+
+- - Rates are workspace-scoped (r.rates.list(ctx)), spec says "del viaje": Ruling: setUsdRate writes a workspace rate asOf today — engine already selects by date — cost if wrong: another trip in the same workspace sees the same USD rate (desired anyway).
+- Task 3: Ruling: chooseProposal también borra reservas 'selected/payment_pending' de piezas que ya no están en la propuesta — sino quedan reservas huérfanas en Confirmar — costo si está mal: se pierde una reserva sin estado que el usuario tendría que volver a marcar
+- Task 4: Ruling: Result de error es {ok:false,error:{code,message}} (forma existente), no {ok:false,code} como decía el plan — se respeta el tipo del proyecto — costo: ninguno.
+- Task 4: Ruling: precios de la IA con toNumber tolerante (como el prototipo) en vez de parseAmount, que no acepta "$" ni "US$" — costo: ninguno.
+- Task 4: Ruling: assertAiConfigSafe vive en guard.ts sin imports para que scripts/migrate.ts lo use sin alias "@/" — costo: ninguno.
+- Task 5: Ruling: el fetch por defecto usa undici con lookup que vuelve a validar en la conexión (evita DNS rebinding); se agrega la dependencia undici — costo: una dependencia más. La regla de <200 caracteres útiles va en readLinkAction (Task 8).
+- Task 7: Ruling: una opción sin precio no tiene partida; las propuestas la listan en missing ("el precio de “X”") y costOf devuelve null — el spec pide que no compita y la barra lo pida — costo: ninguno.
+- Task 7: Ruling: auto propio sale a las 08:00 del día de ida/vuelta (editable desde Itinerario) para tener horarios y competir en "más rápida" — costo: horario supuesto.
+- Task 7: Ruling: cambiar el tipo a otra tabla, o pasar de/a "ida y vuelta", borra y vuelve a crear la opción (cambia el id) — costo: si estaba en el escenario elegido, sale de él.
+- Task 7: Ruling: helper itemsTotalCents en services/costing.ts usado por ofertas y propuestas.
+- Task 8: Ruling: los viajeros se crean con setTravelerCounts existente ("Adulto 1…N") en vez de "Viajero 1…N" — reutiliza el código y la pantalla de viajeros — costo: solo el nombre mostrado.
+- Task 8: Ruling: sin origen se guarda originLabel "" (columna not null) y la app lo trata como "falta desde dónde salís".
+- Task 8: Ruling: manualOfferAction(tripId, kind) recibe el tipo (la UI pregunta qué cargar) — evita crear en una tabla y mover después.
+- Task 8: Ruling: no hay actions/quick.test.ts aparte; la validación vive en quick-trip.ts (probada) y las acciones se cubren por E2E — costo: menos cobertura unitaria de acciones.
+- Task 8: Ruling: un link bloqueado no consume cupo; la captura sí consume antes de llamar a la IA.
+- Task 9: Ruling: se mantienen los nombres de tokens existentes (ink, surface, route, signal…) con los valores del prototipo (+ signal-line, shadow-card) para que toda la app cambie de estilo sin reescribir cada componente — costo: nombres distintos a los del prototipo (sun → signal).
+- Task 10: Ruling: página mínima /opciones creada acá (la llena la Task 11) porque la redirección del formulario la necesita; trip-wizard.spec.ts borrado junto con el asistente — costo: ninguno.
+- Task 11: Ruling: además de runQueue, queue.ts exporta createLimiter(2) compartido por todas las tandas, para que nunca haya más de 2 lecturas a la vez aunque se suelten capturas en momentos distintos.
+- Task 11: Ruling: el selector "El precio es" pasa a llamarse "Cómo se cobra" (más claro y evita confundir con "Precio").
+- Task 11: Ruling: "A mano" usa un selector de tipo al lado del botón (sigue Task 8).
+- Task 13: Ruling: el resumen del viaje redirige (Opciones o Itinerario); viajeros, compartir, duplicar y borrar pasan a "Datos del viaje" (TripAdmin) — preferencias y restricciones del asistente viejo ya no se muestran — costo: esos datos viejos quedan guardados pero invisibles.
+- Task 13: Ruling: el formulario corto suma "Zona horaria de salida" y "Zona horaria del lugar que visitás" (plegadas) — el spec pedía zona editable y el modelo tiene startTz/endTz — costo: ninguno.
+- Task 13: Ruling: en la demo el auto propio se arma como par (pairId) y las actividades gratis quedan fuera de las propuestas (inProposals=false), para que la demo muestre las 3 propuestas sin "falta el precio".
+- Task 13: Ruling: una actividad sin precio bloquea las propuestas ("el precio de …") igual que cualquier opción; para algo gratis se carga precio 0 — costo: un paso más para lo gratuito.
+- Task 13: Ruling: se agrega .prettierrc.json con printWidth 120 (el estilo del proyecto); los archivos nuevos de tareas 1–12 quedaron a 80 y se reformatean en la Task 14.
+- Task 13: Ruling: E2E usan getByLabel(..., { exact: true }) para "Ida", "Vuelta", "Destino" (coinciden por subcadena con "salida" y las zonas horarias).

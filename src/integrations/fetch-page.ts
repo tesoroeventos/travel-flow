@@ -3,8 +3,7 @@ import { isIP } from "node:net";
 import { Agent, fetch as undiciFetch } from "undici";
 import { err, ok, type Result } from "@/domain/result";
 
-const BLOCKED =
-  "Este sitio no deja leer el link. Subí una captura de la página.";
+const BLOCKED = "Este sitio no deja leer el link. Subí una captura de la página.";
 const MAX_REDIRECTS = 3;
 const MAX_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 8000;
@@ -54,9 +53,7 @@ type FetchLike = (
 
 const defaultLookup: Lookup = (host) =>
   new Promise((resolve, reject) =>
-    dnsLookup(host, { all: true }, (e, addrs) =>
-      e ? reject(e) : resolve(addrs.map((a) => a.address)),
-    ),
+    dnsLookup(host, { all: true }, (e, addrs) => (e ? reject(e) : resolve(addrs.map((a) => a.address)))),
   );
 
 /** Conecta solo a direcciones permitidas, aunque el DNS cambie entre la validación y la conexión. */
@@ -66,8 +63,7 @@ const pinnedAgent = new Agent({
       dnsLookup(host, { ...opts, all: true }, (e, addrs) => {
         if (e) return cb(e, []);
         const list = addrs as { address: string; family: number }[];
-        if (list.some((a) => isBlockedAddress(a.address)))
-          return cb(new Error("dirección bloqueada"), []);
+        if (list.some((a) => isBlockedAddress(a.address))) return cb(new Error("dirección bloqueada"), []);
         cb(null, list);
       }),
   },
@@ -84,12 +80,7 @@ async function allowed(url: URL, lookup: Lookup): Promise<boolean> {
   if (url.username || url.password) return false;
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (isIP(host)) return !isBlockedAddress(host);
-  if (
-    host === "localhost" ||
-    host.endsWith(".localhost") ||
-    host.endsWith(".internal")
-  )
-    return false;
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal")) return false;
   try {
     const addrs = await lookup(host);
     return addrs.length > 0 && !addrs.some(isBlockedAddress);

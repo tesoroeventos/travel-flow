@@ -1,28 +1,8 @@
-import type {
-  CarEstimate,
-  OfferBasis,
-  OfferDraft,
-  OfferKind,
-  TripDraft,
-} from "./types";
+import type { CarEstimate, OfferBasis, OfferDraft, OfferKind, TripDraft } from "./types";
 
-const KINDS: OfferKind[] = [
-  "vuelo",
-  "micro",
-  "tren",
-  "auto_alquiler",
-  "alojamiento",
-  "actividad",
-  "otro",
-];
+const KINDS: OfferKind[] = ["vuelo", "micro", "tren", "auto_alquiler", "alojamiento", "actividad", "otro"];
 const TRANSPORT: OfferKind[] = ["vuelo", "micro", "tren"];
-const BASES: OfferBasis[] = [
-  "total",
-  "por_persona",
-  "por_noche",
-  "por_persona_por_noche",
-  "por_dia",
-];
+const BASES: OfferBasis[] = ["total", "por_persona", "por_noche", "por_persona_por_noche", "por_dia"];
 const MAX_OFFERS = 6;
 
 /** Campos en español que devuelve la IA → nombres internos. */
@@ -54,12 +34,9 @@ const TRIP_DOUBT: Record<string, string> = {
   moneda: "currency",
 };
 
-const isObj = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const str = (v: unknown, max: number) =>
-  typeof v === "string" || typeof v === "number"
-    ? String(v).trim().slice(0, max)
-    : "";
+  typeof v === "string" || typeof v === "number" ? String(v).trim().slice(0, max) : "";
 
 /** Número tolerante: "$ 1.234.567", "US$ 1,234.50", "1,5 millones", "800 mil". */
 export function toNumber(v: unknown): number | null {
@@ -94,11 +71,7 @@ export function toNumber(v: unknown): number | null {
 
 function validDate(y: number, m: number, d: number) {
   const dt = new Date(Date.UTC(y, m - 1, d));
-  return (
-    dt.getUTCFullYear() === y &&
-    dt.getUTCMonth() === m - 1 &&
-    dt.getUTCDate() === d
-  );
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
 }
 
 /** "YYYY-MM-DDTHH:MM" o "YYYY-MM-DD" válidos; cualquier otra cosa es null. */
@@ -125,17 +98,10 @@ function parseOne(x: unknown): OfferDraft | null {
       .map((d) => DOUBT_NAMES[String(d)] ?? String(d))
       .filter((d) => Object.values(DOUBT_NAMES).includes(d)),
   );
-  const kind = KINDS.includes(x.tipo as OfferKind)
-    ? (x.tipo as OfferKind)
-    : "otro";
+  const kind = KINDS.includes(x.tipo as OfferKind) ? (x.tipo as OfferKind) : "otro";
   let direction: OfferDraft["direction"] = null;
   if (TRANSPORT.includes(kind)) {
-    direction =
-      x.sentido === "ida" ||
-      x.sentido === "vuelta" ||
-      x.sentido === "ida_y_vuelta"
-        ? x.sentido
-        : null;
+    direction = x.sentido === "ida" || x.sentido === "vuelta" || x.sentido === "ida_y_vuelta" ? x.sentido : null;
     if (!direction) {
       direction = "ida";
       doubt.add("direction");
@@ -158,19 +124,14 @@ function parseOne(x: unknown): OfferDraft | null {
     to: str(x.destino, 60),
     depart,
     arrive,
-    durationMin:
-      duration !== null && duration > 0 && duration < 7 * 24 * 60
-        ? duration
-        : null,
+    durationMin: duration !== null && duration > 0 && duration < 7 * 24 * 60 ? duration : null,
     stops: (() => {
       const s = toInt(x.escalas);
       return s !== null && s >= 0 && s < 10 ? s : null;
     })(),
     price: price !== null && price >= 0 ? price : null,
     currency: x.moneda === "USD" ? "USD" : "ARS",
-    basis: BASES.includes(x.base as OfferBasis)
-      ? (x.base as OfferBasis)
-      : "total",
+    basis: BASES.includes(x.base as OfferBasis) ? (x.base as OfferBasis) : "total",
     nights: (() => {
       const n = toInt(x.noches);
       return n !== null && n > 0 && n < 120 ? n : null;
@@ -191,17 +152,13 @@ export function parseOffers(raw: unknown): OfferDraft[] {
 }
 
 export function offersNotice(raw: unknown): string | null {
-  return isObj(raw) && typeof raw.aviso === "string" && raw.aviso.trim()
-    ? raw.aviso.trim().slice(0, 200)
-    : null;
+  return isObj(raw) && typeof raw.aviso === "string" && raw.aviso.trim() ? raw.aviso.trim().slice(0, 200) : null;
 }
 
 export function parseTripDraft(raw: unknown): TripDraft {
   const x = isObj(raw) ? raw : {};
   const doubt = new Set<string>(
-    (Array.isArray(x.dudosos) ? x.dudosos : [])
-      .map((d) => TRIP_DOUBT[String(d)] ?? "")
-      .filter(Boolean),
+    (Array.isArray(x.dudosos) ? x.dudosos : []).map((d) => TRIP_DOUBT[String(d)] ?? "").filter(Boolean),
   );
   const travelers = toInt(x.personas);
   const t: TripDraft = {
@@ -209,10 +166,7 @@ export function parseTripDraft(raw: unknown): TripDraft {
     origin: str(x.origen, 80) || null,
     startDate: toDate(x.salida),
     endDate: toDate(x.regreso),
-    travelers:
-      travelers !== null && travelers >= 1 && travelers <= 20
-        ? travelers
-        : null,
+    travelers: travelers !== null && travelers >= 1 && travelers <= 20 ? travelers : null,
     budget: (() => {
       const b = toNumber(x.presupuesto);
       return b !== null && b > 0 ? b : null;
@@ -220,37 +174,19 @@ export function parseTripDraft(raw: unknown): TripDraft {
     currency: x.moneda === "USD" ? "USD" : "ARS",
     doubtful: [],
   };
-  for (const k of [
-    "destination",
-    "origin",
-    "startDate",
-    "endDate",
-    "travelers",
-  ] as const)
+  for (const k of ["destination", "origin", "startDate", "endDate", "travelers"] as const)
     if (t[k] === null) doubt.add(k);
   t.doubtful = [...doubt];
   return t;
 }
 
-export function parseCarEstimate(
-  raw: unknown,
-  givenConsumption: number | null,
-): CarEstimate | null {
+export function parseCarEstimate(raw: unknown, givenConsumption: number | null): CarEstimate | null {
   if (!isObj(raw)) return null;
   const km = toNumber(raw.distancia_km);
   const hours = toNumber(raw.horas_manejo);
   const consumption = givenConsumption ?? toNumber(raw.consumo_l_100km);
   const fuelPrice = toNumber(raw.precio_litro);
-  if (
-    !km ||
-    km <= 0 ||
-    !hours ||
-    hours <= 0 ||
-    !consumption ||
-    consumption <= 0 ||
-    !fuelPrice ||
-    fuelPrice <= 0
-  )
+  if (!km || km <= 0 || !hours || hours <= 0 || !consumption || consumption <= 0 || !fuelPrice || fuelPrice <= 0)
     return null;
   const doubt = new Set(["fuelPrice", "tolls"]);
   return {

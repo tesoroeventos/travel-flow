@@ -5,11 +5,7 @@ import type { Ctx } from "../context";
 import { makeRepos } from "../repos";
 import { makeCtx } from "./demo-data";
 import { loadTrip } from "./load-trip";
-import {
-  chooseProposal,
-  PROPOSAL_MARK,
-  proposalsFromLoaded,
-} from "./proposals";
+import { chooseProposal, PROPOSAL_MARK, proposalsFromLoaded } from "./proposals";
 
 const TODAY = "2026-10-15";
 
@@ -27,8 +23,7 @@ async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean } = {}) {
     budgetCents: 150_000_000,
   });
   const tripId = trip.id;
-  for (const n of [1, 2])
-    await r.travelers.create(ctx, { tripId, name: `Viajero ${n}` });
+  for (const n of [1, 2]) await r.travelers.create(ctx, { tripId, name: `Viajero ${n}` });
   const tz = "America/Argentina/Buenos_Aires";
   const seg = (from: string, to: string, d: string, a: string) => [
     { from, to, departUtc: d, departTz: tz, arriveUtc: a, arriveTz: tz },
@@ -100,12 +95,7 @@ async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean } = {}) {
     6_000_000,
     "per_person",
   );
-  const lodging = async (
-    name: string,
-    amount: number,
-    quality: number,
-    currency = "ARS",
-  ) => {
+  const lodging = async (name: string, amount: number, quality: number, currency = "ARS") => {
     const l = await r.lodging.create(ctx, {
       tripId,
       name,
@@ -127,12 +117,8 @@ async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean } = {}) {
     });
     return l;
   };
-  const hotel = opts.noLodging
-    ? null
-    : await lodging("Hotel Centro", 8_000_000, 4);
-  const hostel = opts.noLodging
-    ? null
-    : await lodging("Hostel Lago", 3_000_000, 2);
+  const hotel = opts.noLodging ? null : await lodging("Hotel Centro", 8_000_000, 4);
+  const hostel = opts.noLodging ? null : await lodging("Hostel Lago", 3_000_000, 2);
   const act = await r.activities.create(ctx, {
     tripId,
     name: "Cerro Catedral",
@@ -174,13 +160,9 @@ describe("propuestas del viaje", () => {
     expect(res.missing).toEqual([]);
     expect(res.cards[0]!.perPersonCents).toBe(25_400_000);
     expect(res.cards[0]!.budgetDiffCents).toBe(150_000_000 - 50_800_000);
-    expect(res.cards[0]!.why).toBe(
-      "Ahorrás $ 220.000,00 frente a la más rápida.",
-    );
+    expect(res.cards[0]!.why).toBe("Ahorrás $ 220.000,00 frente a la más rápida.");
     expect(res.cards[1]!.why).toMatch(/^9 h 30 de viaje sumando ida y vuelta/);
-    expect(res.cards[2]!.why).toBe(
-      "Combina vuelo directo con Hotel Centro (8,6/10).",
-    );
+    expect(res.cards[2]!.why).toBe("Combina vuelo directo con Hotel Centro (8,6/10).");
   });
 
   it("precio en USD sin tipo de cambio: la combinación no compite y pide el dólar", async () => {
@@ -223,25 +205,17 @@ describe("propuestas del viaje", () => {
       name: "La más barata",
     });
     const t = await loadTrip(db, ctx, s.tripId);
-    expect(
-      t.scenarios
-        .filter((x) => x.description === PROPOSAL_MARK)
-        .map((x) => x.id),
-    ).toEqual([b]);
+    expect(t.scenarios.filter((x) => x.description === PROPOSAL_MARK).map((x) => x.id)).toEqual([b]);
     expect(t.trip.chosenScenarioId).toBe(b);
     const owners = t.bookings.map((x) => x.ownerId).sort();
-    expect(owners).toEqual(
-      [s.idaMicro.id, s.vtaMicro.id, s.hostel!.id, t.activities[0]!.id].sort(),
-    );
+    expect(owners).toEqual([s.idaMicro.id, s.vtaMicro.id, s.hostel!.id, t.activities[0]!.id].sort());
   });
 
   it("ajuste: swaps cambia la combinación de una tarjeta y la marca ajustada", async () => {
     const s = await seed(db, ctx);
     const data = await loadTrip(db, ctx, s.tripId);
     const base = proposalsFromLoaded(data, { today: TODAY });
-    const plan = base.plans.findIndex(
-      (p) => p[0]!.id === s.idaMicro.id && p[1]!.id === s.vtaMicro.id,
-    );
+    const plan = base.plans.findIndex((p) => p[0]!.id === s.idaMicro.id && p[1]!.id === s.vtaMicro.id);
     const lodging = base.lodgings.findIndex((l) => l.id === s.hotel!.id);
     const res = proposalsFromLoaded(data, {
       today: TODAY,
@@ -256,9 +230,10 @@ describe("propuestas del viaje", () => {
 
   it("sin alojamiento: missing incluye 'dónde te alojás' y no hay tarjetas", async () => {
     const s = await seed(db, ctx, { noLodging: true });
-    expect(
-      proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY }),
-    ).toMatchObject({ missing: ["dónde te alojás"], cards: [] });
+    expect(proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY })).toMatchObject({
+      missing: ["dónde te alojás"],
+      cards: [],
+    });
   });
 
   it("lo que va en destino y se excluye no suma", async () => {

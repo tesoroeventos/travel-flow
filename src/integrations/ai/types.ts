@@ -9,17 +9,9 @@ export interface TripContext {
   today: string;
 }
 
-export type OfferKind =
-  | "vuelo"
-  | "micro"
-  | "tren"
-  | "auto_alquiler"
-  | "alojamiento"
-  | "actividad"
-  | "otro";
+export type OfferKind = "vuelo" | "micro" | "tren" | "auto_alquiler" | "alojamiento" | "actividad" | "otro";
 export type OfferDirection = "ida" | "vuelta" | "ida_y_vuelta";
-export type OfferBasis =
-  "total" | "por_persona" | "por_noche" | "por_persona_por_noche" | "por_dia";
+export type OfferBasis = "total" | "por_persona" | "por_noche" | "por_persona_por_noche" | "por_dia";
 
 export interface OfferDraft {
   kind: OfferKind;
@@ -73,36 +65,20 @@ export interface CarEstimate {
 }
 
 export type AiErrorCode =
-  | "not_configured"
-  | "no_offers"
-  | "bad_response"
-  | "upstream"
-  | "limit"
-  | "blocked"
-  | "bad_input";
+  "not_configured" | "no_offers" | "bad_response" | "upstream" | "limit" | "blocked" | "bad_input";
 
 export const AI_MESSAGES = {
-  not_configured:
-    "La lectura automática no está configurada. Cargá la opción a mano.",
+  not_configured: "La lectura automática no está configurada. Cargá la opción a mano.",
   no_offers: "No encontré una opción de viaje en esta captura.",
   bad_response: "No pude entender esta captura. Reintentá o cargala a mano.",
   upstream: "No se pudo leer ahora. Probá de nuevo en un rato.",
-  limit:
-    "Llegaste al límite de lecturas de hoy. Mañana se renueva; mientras tanto podés cargar a mano.",
+  limit: "Llegaste al límite de lecturas de hoy. Mañana se renueva; mientras tanto podés cargar a mano.",
   blocked: "Este sitio no deja leer el link. Subí una captura de la página.",
 } as const;
 
 export interface TravelAI {
   parseTrip(text: string, today: string): Promise<Result<TripDraft>>;
-  readImage(
-    image: Buffer,
-    mime: string,
-    ctx: TripContext,
-  ): Promise<Result<OfferDraft[]>>;
-  readPage(
-    text: string,
-    url: string,
-    ctx: TripContext,
-  ): Promise<Result<OfferDraft[]>>;
+  readImage(image: Buffer, mime: string, ctx: TripContext): Promise<Result<OfferDraft[]>>;
+  readPage(text: string, url: string, ctx: TripContext): Promise<Result<OfferDraft[]>>;
   estimateCar(input: CarAsk): Promise<Result<CarEstimate>>;
 }

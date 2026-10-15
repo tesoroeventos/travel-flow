@@ -17,26 +17,21 @@ describe("getAI", () => {
       ok: false,
       error: {
         code: "not_configured",
-        message:
-          "La lectura automática no está configurada. Cargá la opción a mano.",
+        message: "La lectura automática no está configurada. Cargá la opción a mano.",
       },
     });
   });
 
   it("con AI_FAKE=1 usa la simulada", async () => {
     process.env.AI_FAKE = "1";
-    const r = await getAI().readImage(
-      Buffer.from("x"),
-      "image/png;name=vuelo-ida.png",
-      {
-        origin: "Zárate",
-        destination: "Bariloche",
-        startDate: "2027-01-10",
-        endDate: "2027-01-16",
-        travelers: 2,
-        today: "2026-10-15",
-      },
-    );
+    const r = await getAI().readImage(Buffer.from("x"), "image/png;name=vuelo-ida.png", {
+      origin: "Zárate",
+      destination: "Bariloche",
+      startDate: "2027-01-10",
+      endDate: "2027-01-16",
+      travelers: 2,
+      today: "2026-10-15",
+    });
     expect(r.ok && r.data[0]).toMatchObject({
       kind: "vuelo",
       direction: "ida",
@@ -45,27 +40,19 @@ describe("getAI", () => {
 
   it("la simulada no encuentra ofertas en 'ilegible'", async () => {
     process.env.AI_FAKE = "1";
-    const r = await getAI().readImage(
-      Buffer.from("x"),
-      "image/png;name=ilegible.png",
-      {
-        origin: null,
-        destination: "B",
-        startDate: "2027-01-10",
-        endDate: "2027-01-16",
-        travelers: 1,
-        today: "2026-10-15",
-      },
-    );
+    const r = await getAI().readImage(Buffer.from("x"), "image/png;name=ilegible.png", {
+      origin: null,
+      destination: "B",
+      startDate: "2027-01-10",
+      endDate: "2027-01-16",
+      travelers: 1,
+      today: "2026-10-15",
+    });
     expect(r).toMatchObject({ ok: false, error: { code: "no_offers" } });
   });
 
   it("producción con AI_FAKE=1 no arranca", () => {
-    expect(() =>
-      assertAiConfigSafe({ NODE_ENV: "production", AI_FAKE: "1" } as never),
-    ).toThrow();
-    expect(() =>
-      assertAiConfigSafe({ NODE_ENV: "production" } as never),
-    ).not.toThrow();
+    expect(() => assertAiConfigSafe({ NODE_ENV: "production", AI_FAKE: "1" } as never)).toThrow();
+    expect(() => assertAiConfigSafe({ NODE_ENV: "production" } as never)).not.toThrow();
   });
 });

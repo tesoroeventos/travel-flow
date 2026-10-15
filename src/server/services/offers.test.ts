@@ -6,14 +6,7 @@ import { makeRepos } from "../repos";
 import type { OfferDraft } from "@/integrations/ai/types";
 import { makeCtx } from "./demo-data";
 import { loadTrip } from "./load-trip";
-import {
-  offerCardsFromLoaded,
-  saveCarOffer,
-  saveOffers,
-  setInProposals,
-  setUsdRate,
-  updateOffer,
-} from "./offers";
+import { offerCardsFromLoaded, saveCarOffer, saveOffers, setInProposals, setUsdRate, updateOffer } from "./offers";
 import { proposalsFromLoaded } from "./proposals";
 
 const TZ = "America/Argentina/Buenos_Aires";
@@ -59,8 +52,7 @@ describe("ofertas", () => {
       budgetCents: 0,
     });
     tripId = t.id;
-    for (const n of [1, 2])
-      await r.travelers.create(ctx, { tripId, name: `Viajero ${n}` });
+    for (const n of [1, 2]) await r.travelers.create(ctx, { tripId, name: `Viajero ${n}` });
   });
 
   it("vuelo de ida con horarios crea transporte con un segmento y su partida", async () => {
@@ -107,20 +99,15 @@ describe("ofertas", () => {
       ],
       { kind: "captura" },
     );
-    const t = (await loadTrip(db, ctx, tripId)).transport.find(
-      (x) => x.id === s!.id,
-    )!;
+    const t = (await loadTrip(db, ctx, tripId)).transport.find((x) => x.id === s!.id)!;
     expect(t.segments[0]!.arriveUtc).toBe("2027-01-11T07:00:00.000Z");
   });
 
   it("ida y vuelta crea dos filas con el mismo pairId y una sola partida", async () => {
-    const saved = await saveOffers(
-      db,
-      ctx,
-      tripId,
-      [draft({ direction: "ida_y_vuelta" })],
-      { kind: "link", url: "https://www.despegar.com.ar/x" },
-    );
+    const saved = await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta" })], {
+      kind: "link",
+      url: "https://www.despegar.com.ar/x",
+    });
     const data = await loadTrip(db, ctx, tripId);
     expect(data.transport).toHaveLength(2);
     expect(data.transport[0]!.pairId).toBeTruthy();
@@ -128,9 +115,7 @@ describe("ofertas", () => {
     expect(data.costItems).toHaveLength(1);
     expect(data.costItems[0]!.source).toBe("despegar.com.ar");
     expect(saved).toHaveLength(2);
-    expect(
-      offerCardsFromLoaded(data).filter((c) => c.group === "ida_y_vuelta"),
-    ).toHaveLength(1);
+    expect(offerCardsFromLoaded(data).filter((c) => c.group === "ida_y_vuelta")).toHaveLength(1);
   });
 
   it("alojamiento sin horarios toma 14:00 y 10:00; '4 estrellas' guarda rating 8", async () => {
@@ -158,16 +143,10 @@ describe("ofertas", () => {
   });
 
   it("puntaje '8,6/10' se guarda como 8.6", async () => {
-    await saveOffers(
-      db,
-      ctx,
-      tripId,
-      [draft({ kind: "alojamiento", direction: null, score: "8,6/10" })],
-      { kind: "captura" },
-    );
-    expect(Number((await loadTrip(db, ctx, tripId)).lodging[0]!.rating)).toBe(
-      8.6,
-    );
+    await saveOffers(db, ctx, tripId, [draft({ kind: "alojamiento", direction: null, score: "8,6/10" })], {
+      kind: "captura",
+    });
+    expect(Number((await loadTrip(db, ctx, tripId)).lodging[0]!.rating)).toBe(8.6);
   });
 
   it("actividad sin fecha va al primer día completo", async () => {
@@ -221,20 +200,12 @@ describe("ofertas", () => {
       ]),
     );
     expect(data.transport[0]!.pairId).toBe(data.transport[1]!.pairId);
-    const fuel = data.costItems.filter(
-      (i) => i.assumptions?.concept === "fuel",
-    );
-    const tolls = data.costItems.filter(
-      (i) => i.assumptions?.concept === "tolls",
-    );
+    const fuel = data.costItems.filter((i) => i.assumptions?.concept === "fuel");
+    const tolls = data.costItems.filter((i) => i.assumptions?.concept === "tolls");
     expect(fuel).toHaveLength(2);
-    expect(fuel[0]!.amountCents).toBe(
-      Math.round(((1650 * 7) / 100) * 1300 * 100),
-    );
+    expect(fuel[0]!.amountCents).toBe(Math.round(((1650 * 7) / 100) * 1300 * 100));
     expect(tolls[0]!.amountCents).toBe(1_500_000);
-    const card = offerCardsFromLoaded(data).find(
-      (c) => c.kind === "auto_propio",
-    )!;
+    const card = offerCardsFromLoaded(data).find((c) => c.kind === "auto_propio")!;
     expect(card).toMatchObject({
       group: "ida_y_vuelta",
       totalCents: 2 * (15_015_000 + 1_500_000),
@@ -243,22 +214,13 @@ describe("ofertas", () => {
   });
 
   it("la marca [revisar:…] se muestra como dudosa y desaparece al editar", async () => {
-    const [s] = await saveOffers(
-      db,
-      ctx,
-      tripId,
-      [draft({ detail: "Valija 15 kg", doubtful: ["price"] })],
-      { kind: "captura" },
-    );
+    const [s] = await saveOffers(db, ctx, tripId, [draft({ detail: "Valija 15 kg", doubtful: ["price"] })], {
+      kind: "captura",
+    });
     const card = offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!;
     expect(card.doubtful).toEqual(["price"]);
     expect(card.detail).toBe("Valija 15 kg");
-    await updateOffer(
-      db,
-      ctx,
-      { ownerType: s!.ownerType, id: s!.id },
-      { price: 250000 },
-    );
+    await updateOffer(db, ctx, { ownerType: s!.ownerType, id: s!.id }, { price: 250000 });
     const card2 = offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!;
     expect(card2.doubtful).toEqual([]);
     expect(card2.totalCents).toBe(25_000_000);
@@ -294,9 +256,7 @@ describe("ofertas", () => {
         },
       },
     );
-    const card = offerCardsFromLoaded(await loadTrip(db, ctx, tripId)).find(
-      (c) => c.kind === "auto_propio",
-    )!;
+    const card = offerCardsFromLoaded(await loadTrip(db, ctx, tripId)).find((c) => c.kind === "auto_propio")!;
     expect(card.totalCents).toBe(2 * (20 * 1000 * 100 + 500 * 100));
   });
 
@@ -304,12 +264,7 @@ describe("ofertas", () => {
     const [s] = await saveOffers(db, ctx, tripId, [draft({})], {
       kind: "manual",
     });
-    await updateOffer(
-      db,
-      ctx,
-      { ownerType: s!.ownerType, id: s!.id },
-      { kind: "alojamiento", name: "Cabaña" },
-    );
+    await updateOffer(db, ctx, { ownerType: s!.ownerType, id: s!.id }, { kind: "alojamiento", name: "Cabaña" });
     const data = await loadTrip(db, ctx, tripId);
     expect(data.transport).toHaveLength(0);
     expect(data.lodging.map((l) => l.name)).toEqual(["Cabaña"]);
@@ -328,12 +283,8 @@ describe("ofertas", () => {
       { kind: "captura" },
     );
     const data = await loadTrip(db, ctx, tripId);
-    expect(
-      offerCardsFromLoaded(data).find((c) => c.group === "ida")!.totalCents,
-    ).toBeNull();
-    expect(proposalsFromLoaded(data, { today: "2026-10-15" }).missing).toEqual([
-      "el precio de “AR 1672 · directo”",
-    ]);
+    expect(offerCardsFromLoaded(data).find((c) => c.group === "ida")!.totalCents).toBeNull();
+    expect(proposalsFromLoaded(data, { today: "2026-10-15" }).missing).toEqual(["el precio de “AR 1672 · directo”"]);
   });
 
   it("setUsdRate guarda USD→ARS con fecha de hoy y la propuesta deja de pedir el dólar", async () => {
@@ -372,16 +323,8 @@ describe("ofertas", () => {
   });
 
   it("excluir una actividad de las propuestas", async () => {
-    const [a] = await saveOffers(
-      db,
-      ctx,
-      tripId,
-      [draft({ kind: "actividad", direction: null })],
-      { kind: "captura" },
-    );
+    const [a] = await saveOffers(db, ctx, tripId, [draft({ kind: "actividad", direction: null })], { kind: "captura" });
     await setInProposals(db, ctx, { ownerType: "activity", id: a!.id }, false);
-    expect(
-      offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!.inProposals,
-    ).toBe(false);
+    expect(offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!.inProposals).toBe(false);
   });
 });

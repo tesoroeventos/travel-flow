@@ -5,9 +5,7 @@ import { OptionsBoard } from "@/ui/options/OptionsBoard";
 
 export const metadata = { title: "Opciones · TravelFlow" };
 
-export default async function OptionsPage({
-  params,
-}: PageProps<"/viajes/[id]/opciones">) {
+export default async function OptionsPage({ params }: PageProps<"/viajes/[id]/opciones">) {
   const { id } = await params;
   const { data } = await getTripData(id);
   const cards = offerCardsFromLoaded(data);

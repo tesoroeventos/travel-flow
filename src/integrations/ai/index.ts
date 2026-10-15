@@ -6,8 +6,7 @@ import { AI_MESSAGES, type TravelAI } from "./types";
 export * from "./types";
 export { assertAiConfigSafe } from "./guard";
 
-const notConfigured = async () =>
-  err("not_configured", AI_MESSAGES.not_configured);
+const notConfigured = async () => err("not_configured", AI_MESSAGES.not_configured);
 const unconfiguredAI: TravelAI = {
   parseTrip: notConfigured,
   readImage: notConfigured,

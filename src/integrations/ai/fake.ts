@@ -1,10 +1,5 @@
 import { err, ok } from "@/domain/result";
-import {
-  AI_MESSAGES,
-  type OfferDraft,
-  type TravelAI,
-  type TripContext,
-} from "./types";
+import { AI_MESSAGES, type OfferDraft, type TravelAI, type TripContext } from "./types";
 
 /** IA simulada para pruebas y E2E (AI_FAKE=1). Responde según el nombre del archivo o el link. */
 const base = (o: Partial<OfferDraft>): OfferDraft => ({
@@ -156,9 +151,7 @@ function offersFor(name: string, ctx: TripContext): OfferDraft[] | null {
 export const fakeAI: TravelAI = {
   async parseTrip(text) {
     const origin = /z[aá]rate/i.test(text) ? "Zárate" : null;
-    const dest = /bariloche/i.test(text)
-      ? "Bariloche"
-      : (text.split(/[ ,]/)[0] ?? "").trim() || null;
+    const dest = /bariloche/i.test(text) ? "Bariloche" : (text.split(/[ ,]/)[0] ?? "").trim() || null;
     return ok({
       destination: dest,
       origin,

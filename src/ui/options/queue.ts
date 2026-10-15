@@ -26,13 +26,7 @@ export function createLimiter(max: number) {
 }
 
 /** Procesa todos los elementos con hasta `concurrency` a la vez. Un error no corta a los demás. */
-export async function runQueue<T>(
-  items: T[],
-  worker: (t: T) => Promise<void>,
-  concurrency = 2,
-): Promise<void> {
+export async function runQueue<T>(items: T[], worker: (t: T) => Promise<void>, concurrency = 2): Promise<void> {
   const run = createLimiter(concurrency);
-  await Promise.all(
-    items.map((it) => run(() => worker(it)).catch(() => undefined)),
-  );
+  await Promise.all(items.map((it) => run(() => worker(it)).catch(() => undefined)));
 }

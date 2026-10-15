@@ -35,10 +35,8 @@ const COMFORT = {
 } as const;
 
 const nf = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
-const fmtNum = (n: number | null | undefined) =>
-  n === null || n === undefined ? "" : nf.format(n);
-const fmtDur = (m: number | null | undefined) =>
-  m ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}` : "";
+const fmtNum = (n: number | null | undefined) => (n === null || n === undefined ? "" : nf.format(n));
+const fmtDur = (m: number | null | undefined) => (m ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}` : "");
 function parseDur(s: string): number | null {
   const t = s.trim();
   if (!t) return null;
@@ -50,31 +48,16 @@ function parseDur(s: string): number | null {
 
 const input =
   "w-full min-h-12 rounded-xl border-[1.5px] border-line bg-surface-2 px-3 text-base focus:border-route focus:outline-none";
-const labelCls =
-  "mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase";
+const labelCls = "mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase";
 
-function F({
-  id,
-  label,
-  doubt,
-  children,
-}: {
-  id: string;
-  label: string;
-  doubt?: boolean;
-  children: React.ReactNode;
-}) {
+function F({ id, label, doubt, children }: { id: string; label: string; doubt?: boolean; children: React.ReactNode }) {
   return (
     <div className={`min-w-0 ${doubt ? "doubt" : ""}`}>
       <label htmlFor={id} className={labelCls}>
         {label}
       </label>
       {children}
-      {doubt ? (
-        <p className="mt-1 text-sm font-semibold text-signal">
-          Revisá este dato
-        </p>
-      ) : null}
+      {doubt ? <p className="mt-1 text-sm font-semibold text-signal">Revisá este dato</p> : null}
     </div>
   );
 }
@@ -91,9 +74,7 @@ export function OfferEditor({
 }) {
   const e = card.edit;
   const isCar = card.kind === "auto_propio";
-  const [kind, setKind] = useState<string>(
-    isCar ? "auto_propio" : (e.kind ?? "otro"),
-  );
+  const [kind, setKind] = useState<string>(isCar ? "auto_propio" : (e.kind ?? "otro"));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const id = (k: string) => `ed-${k}-${card.id}`;
@@ -153,20 +134,11 @@ export function OfferEditor({
   }
 
   return (
-    <form
-      onSubmit={submit}
-      aria-label="Editar opción"
-      className="flex flex-col gap-3"
-    >
+    <form onSubmit={submit} aria-label="Editar opción" className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
         {!isCar ? (
           <F id={id("kind")} label="Tipo">
-            <select
-              id={id("kind")}
-              className={input}
-              value={kind}
-              onChange={(ev) => setKind(ev.target.value)}
-            >
+            <select id={id("kind")} className={input} value={kind} onChange={(ev) => setKind(ev.target.value)}>
               {Object.entries(KINDS).map(([k, l]) => (
                 <option key={k} value={k}>
                   {l}
@@ -177,12 +149,7 @@ export function OfferEditor({
         ) : null}
         {isT ? (
           <F id={id("direction")} label="Sentido" doubt={d("direction")}>
-            <select
-              id={id("direction")}
-              name="direction"
-              className={input}
-              defaultValue={e.direction ?? "ida"}
-            >
+            <select id={id("direction")} name="direction" className={input} defaultValue={e.direction ?? "ida"}>
               {Object.entries(DIRS).map(([k, l]) => (
                 <option key={k} value={k}>
                   {l}
@@ -191,20 +158,14 @@ export function OfferEditor({
             </select>
           </F>
         ) : null}
-        <F
-          id={id("name")}
-          label={isCar ? "Modelo" : "Nombre"}
-          doubt={d("name")}
-        >
+        <F id={id("name")} label={isCar ? "Modelo" : "Nombre"} doubt={d("name")}>
           <input
             id={id("name")}
             name="name"
             className={input}
             defaultValue={e.name ?? ""}
             autoComplete="off"
-            placeholder={
-              kind === "alojamiento" ? "Hotel…" : "Ej.: AR 1672 directo"
-            }
+            placeholder={kind === "alojamiento" ? "Hotel…" : "Ej.: AR 1672 directo"}
           />
         </F>
         {!isCar ? (
@@ -221,13 +182,7 @@ export function OfferEditor({
         {isCar ? (
           <>
             <F id={id("km")} label="Km por tramo">
-              <input
-                id={id("km")}
-                name="km"
-                inputMode="decimal"
-                className={input}
-                defaultValue={fmtNum(e.car?.km)}
-              />
+              <input id={id("km")} name="km" inputMode="decimal" className={input} defaultValue={fmtNum(e.car?.km)} />
             </F>
             <F id={id("hours")} label="Horas de manejo por tramo">
               <input
@@ -247,11 +202,7 @@ export function OfferEditor({
                 defaultValue={fmtNum(e.car?.consumptionLPer100)}
               />
             </F>
-            <F
-              id={id("fuelPrice")}
-              label="Precio del litro ($)"
-              doubt={d("fuelPrice")}
-            >
+            <F id={id("fuelPrice")} label="Precio del litro ($)" doubt={d("fuelPrice")}>
               <input
                 id={id("fuelPrice")}
                 name="fuelPrice"
@@ -274,13 +225,7 @@ export function OfferEditor({
           <>
             <F
               id={id("depart")}
-              label={
-                kind === "alojamiento"
-                  ? "Check-in"
-                  : dateOnly
-                    ? "Fecha"
-                    : "Salida"
-              }
+              label={kind === "alojamiento" ? "Check-in" : dateOnly ? "Fecha" : "Salida"}
               doubt={d("depart")}
             >
               {dateOnly ? (
@@ -297,43 +242,23 @@ export function OfferEditor({
                   name="depart"
                   type="datetime-local"
                   className={input}
-                  defaultValue={
-                    e.depart && e.depart.length > 10
-                      ? e.depart
-                      : e.depart
-                        ? `${e.depart}T12:00`
-                        : ""
-                  }
+                  defaultValue={e.depart && e.depart.length > 10 ? e.depart : e.depart ? `${e.depart}T12:00` : ""}
                 />
               )}
             </F>
             {!dateOnly ? (
-              <F
-                id={id("arrive")}
-                label={kind === "alojamiento" ? "Check-out" : "Llegada"}
-                doubt={d("arrive")}
-              >
+              <F id={id("arrive")} label={kind === "alojamiento" ? "Check-out" : "Llegada"} doubt={d("arrive")}>
                 <input
                   id={id("arrive")}
                   name="arrive"
                   type="datetime-local"
                   className={input}
-                  defaultValue={
-                    e.arrive && e.arrive.length > 10
-                      ? e.arrive
-                      : e.arrive
-                        ? `${e.arrive}T12:00`
-                        : ""
-                  }
+                  defaultValue={e.arrive && e.arrive.length > 10 ? e.arrive : e.arrive ? `${e.arrive}T12:00` : ""}
                 />
               </F>
             ) : null}
             {isT ? (
-              <F
-                id={id("duration")}
-                label="Duración por tramo (h:mm)"
-                doubt={d("durationMin")}
-              >
+              <F id={id("duration")} label="Duración por tramo (h:mm)" doubt={d("durationMin")}>
                 <input
                   id={id("duration")}
                   name="duration"
@@ -354,23 +279,13 @@ export function OfferEditor({
               />
             </F>
             <F id={id("currency")} label="Moneda">
-              <select
-                id={id("currency")}
-                name="currency"
-                className={input}
-                defaultValue={e.currency ?? "ARS"}
-              >
+              <select id={id("currency")} name="currency" className={input} defaultValue={e.currency ?? "ARS"}>
                 <option value="ARS">Pesos</option>
                 <option value="USD">Dólares</option>
               </select>
             </F>
             <F id={id("basis")} label="Cómo se cobra" doubt={d("basis")}>
-              <select
-                id={id("basis")}
-                name="basis"
-                className={input}
-                defaultValue={e.basis ?? "total"}
-              >
+              <select id={id("basis")} name="basis" className={input} defaultValue={e.basis ?? "total"}>
                 {Object.entries(BASES).map(([k, l]) => (
                   <option key={k} value={k}>
                     {l}
@@ -392,12 +307,7 @@ export function OfferEditor({
           </>
         )}
         <F id={id("comfort")} label="Confort">
-          <select
-            id={id("comfort")}
-            name="comfort"
-            className={input}
-            defaultValue={String(e.comfort ?? 3)}
-          >
+          <select id={id("comfort")} name="comfort" className={input} defaultValue={String(e.comfort ?? 3)}>
             {Object.entries(COMFORT).map(([k, l]) => (
               <option key={k} value={k}>
                 {l}

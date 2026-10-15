@@ -37,11 +37,7 @@ export function imagePrompt(ctx: TripContext): string {
 ${offerRules(ctx)}`;
 }
 
-export function pagePrompt(
-  text: string,
-  url: string,
-  ctx: TripContext,
-): string {
+export function pagePrompt(text: string, url: string, ctx: TripContext): string {
   return `Sos el asistente de una app argentina para planificar viajes. El usuario pegó un link (${url}). Este es el texto de esa página, entre las marcas <<< y >>>:
 <<<${text}>>>
 ${offerRules(ctx)}`;

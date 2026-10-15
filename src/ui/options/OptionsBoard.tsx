@@ -124,12 +124,8 @@ export function OptionsBoard({
   const [manualKind, setManualKind] = useState("vuelo");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const refresh = useCallback(
-    () => startTransition(() => router.refresh()),
-    [router],
-  );
-  const patchJob = (id: string, p: Partial<Job>) =>
-    setJobs((js) => js.map((j) => (j.id === id ? { ...j, ...p } : j)));
+  const refresh = useCallback(() => startTransition(() => router.refresh()), [router]);
+  const patchJob = (id: string, p: Partial<Job>) => setJobs((js) => js.map((j) => (j.id === id ? { ...j, ...p } : j)));
 
   const readJob = useCallback(
     (job: Job) =>
@@ -140,12 +136,9 @@ export function OptionsBoard({
           const fd = new FormData();
           fd.set(
             "image",
-            new File(
-              [blob],
-              job.name.replace(/\.\w+$/, "") +
-                (blob.type === "image/jpeg" ? ".jpg" : ""),
-              { type: blob.type || job.file.type },
-            ),
+            new File([blob], job.name.replace(/\.\w+$/, "") + (blob.type === "image/jpeg" ? ".jpg" : ""), {
+              type: blob.type || job.file.type,
+            }),
           );
           fd.set("name", job.name);
           const r = await readImageAction(tripId, fd);
@@ -174,16 +167,14 @@ export function OptionsBoard({
         });
         return;
       }
-      const fresh = imgs
-        .slice(0, 10)
-        .map<Job>((f) => ({
-          id: uid(),
-          file: f,
-          name: f.name || "captura",
-          thumb: URL.createObjectURL(f),
-          status: "cola",
-          msg: "",
-        }));
+      const fresh = imgs.slice(0, 10).map<Job>((f) => ({
+        id: uid(),
+        file: f,
+        name: f.name || "captura",
+        thumb: URL.createObjectURL(f),
+        status: "cola",
+        msg: "",
+      }));
       setJobs((js) => [...js, ...fresh]);
       for (const j of fresh) void readJob(j);
     },
@@ -214,9 +205,7 @@ export function OptionsBoard({
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      const files = [...(e.clipboardData?.files ?? [])].filter((f) =>
-        f.type.startsWith("image/"),
-      );
+      const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith("image/"));
       if (files.length) {
         e.preventDefault();
         addFiles(files);
@@ -224,10 +213,7 @@ export function OptionsBoard({
       }
       const text = e.clipboardData?.getData("text")?.trim() ?? "";
       const target = e.target as HTMLElement | null;
-      if (
-        /^https?:\/\//i.test(text) &&
-        !target?.closest("input,textarea,select")
-      ) {
+      if (/^https?:\/\//i.test(text) && !target?.closest("input,textarea,select")) {
         e.preventDefault();
         void readLink(text);
       }
@@ -236,15 +222,8 @@ export function OptionsBoard({
     return () => window.removeEventListener("paste", onPaste);
   }, [addFiles, readLink]);
 
-  async function saveEdit(
-    card: OfferCard,
-    edit: OfferEdit,
-  ): Promise<string | null> {
-    const r = await updateOfferAction(
-      tripId,
-      { ownerType: card.ownerType, id: card.id },
-      edit,
-    );
+  async function saveEdit(card: OfferCard, edit: OfferEdit): Promise<string | null> {
+    const r = await updateOfferAction(tripId, { ownerType: card.ownerType, id: card.id }, edit);
     if (!r.ok) return r.error.message;
     setEditing(null);
     refresh();
@@ -263,11 +242,7 @@ export function OptionsBoard({
     const f = new FormData(ev.currentTarget);
     setCarBusy(true);
     setCarErr(null);
-    const r = await carAction(
-      tripId,
-      String(f.get("model") ?? ""),
-      String(f.get("consumption") ?? ""),
-    );
+    const r = await carAction(tripId, String(f.get("model") ?? ""), String(f.get("consumption") ?? ""));
     setCarBusy(false);
     if (!r.ok) setCarErr(r.error.message);
     else {
@@ -306,22 +281,15 @@ export function OptionsBoard({
           if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
         }}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-7 text-center transition-colors focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-route ${
-          over
-            ? "border-route bg-route-soft"
-            : "border-route/50 bg-route-soft/50 hover:bg-route-soft"
+          over ? "border-route bg-route-soft" : "border-route/50 bg-route-soft/50 hover:bg-route-soft"
         }`}
       >
         <Icon name="upload" className="size-10 text-route" />
-        <span className="font-display text-xl font-bold">
-          Soltá acá tus capturas
-        </span>
+        <span className="font-display text-xl font-bold">Soltá acá tus capturas</span>
         <span className="text-ink-soft">
-          o tocá para elegirlas. Vuelos, micros, hoteles, alquileres: podés
-          subir varias juntas.
+          o tocá para elegirlas. Vuelos, micros, hoteles, alquileres: podés subir varias juntas.
         </span>
-        <span className="hidden text-sm text-ink-soft md:block">
-          También podés pegarlas con Ctrl+V.
-        </span>
+        <span className="hidden text-sm text-ink-soft md:block">También podés pegarlas con Ctrl+V.</span>
         <input
           id="shots"
           ref={fileRef}
@@ -342,9 +310,7 @@ export function OptionsBoard({
           className="flex min-w-0 gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            const v = String(
-              new FormData(e.currentTarget).get("url") ?? "",
-            ).trim();
+            const v = String(new FormData(e.currentTarget).get("url") ?? "").trim();
             if (v) void readLink(v);
           }}
         >
@@ -356,22 +322,12 @@ export function OptionsBoard({
             placeholder="Pegá un link de Despegar, Booking…"
             className="min-h-12 min-w-0 flex-1 rounded-xl border-[1.5px] border-line bg-surface px-3"
           />
-          <Button
-            type="submit"
-            variant="secondary"
-            disabled={linkBusy}
-            aria-label="Leer link"
-          >
+          <Button type="submit" variant="secondary" disabled={linkBusy} aria-label="Leer link">
             <Icon name="link" />
           </Button>
         </form>
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setCarOpen((o) => !o)}
-            className="flex-1"
-          >
+          <Button type="button" variant="secondary" onClick={() => setCarOpen((o) => !o)} className="flex-1">
             <Icon name="car" />
             Uso mi auto
           </Button>
@@ -393,11 +349,7 @@ export function OptionsBoard({
               <option value="auto_alquiler">Auto de alquiler</option>
               <option value="otro">Otro gasto</option>
             </select>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => void addManual()}
-            >
+            <Button type="button" variant="secondary" onClick={() => void addManual()}>
               <Icon name="plus" />A mano
             </Button>
           </div>
@@ -413,16 +365,11 @@ export function OptionsBoard({
         >
           <h2 className="font-display text-lg font-bold">Tu auto</h2>
           {hasOrigin ? (
-            <p className="text-ink-soft">
-              Calculo distancia, nafta, peajes y horas de manejo, ida y vuelta.
-            </p>
+            <p className="text-ink-soft">Calculo distancia, nafta, peajes y horas de manejo, ida y vuelta.</p>
           ) : (
             <Note tone="warn">
               Falta desde dónde salís.{" "}
-              <Link
-                href={`/viajes/${tripId}/editar`}
-                className="font-bold underline"
-              >
+              <Link href={`/viajes/${tripId}/editar`} className="font-bold underline">
                 Completalo en los datos del viaje
               </Link>
               .
@@ -466,11 +413,7 @@ export function OptionsBoard({
             </p>
           ) : null}
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCarOpen(false)}
-            >
+            <Button type="button" variant="secondary" onClick={() => setCarOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={carBusy || !hasOrigin}>
@@ -481,19 +424,11 @@ export function OptionsBoard({
       ) : null}
 
       {status.needsUsdRate ? (
-        <form
-          onSubmit={saveUsd}
-          className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-card"
-        >
-          <h2 className="font-display text-lg font-bold">
-            Hay precios en dólares
-          </h2>
+        <form onSubmit={saveUsd} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-card">
+          <h2 className="font-display text-lg font-bold">Hay precios en dólares</h2>
           <div className="flex flex-wrap items-end gap-3">
             <div className="min-w-0 flex-1">
-              <label
-                htmlFor="usd"
-                className="mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase"
-              >
+              <label htmlFor="usd" className="mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase">
                 ¿A cuánto tomás el dólar?
               </label>
               <input
@@ -507,9 +442,7 @@ export function OptionsBoard({
             </div>
             <Button type="submit">Guardar dólar</Button>
           </div>
-          <p className="text-sm text-ink-soft">
-            Lo uso para pasar todo a pesos y poder comparar.
-          </p>
+          <p className="text-sm text-ink-soft">Lo uso para pasar todo a pesos y poder comparar.</p>
           {usdErr ? (
             <p className="font-semibold text-alert" role="alert">
               {usdErr}
@@ -519,10 +452,7 @@ export function OptionsBoard({
       ) : null}
 
       {jobs.length ? (
-        <section
-          className="flex flex-col gap-2.5"
-          aria-label="Capturas en lectura"
-        >
+        <section className="flex flex-col gap-2.5" aria-label="Capturas en lectura">
           <h2 className="flex items-center gap-2 text-xs font-bold tracking-wider text-ink-soft uppercase after:h-px after:flex-1 after:bg-line">
             Leyendo capturas
           </h2>
@@ -559,9 +489,7 @@ export function OptionsBoard({
                     type="button"
                     variant="ghost"
                     className="min-h-10 px-3 text-sm"
-                    onClick={() =>
-                      setJobs((js) => js.filter((x) => x.id !== j.id))
-                    }
+                    onClick={() => setJobs((js) => js.filter((x) => x.id !== j.id))}
                   >
                     Quitar
                   </Button>
@@ -593,13 +521,8 @@ export function OptionsBoard({
               {title}
             </h2>
             {items.map((c) => {
-              const missingPrice =
-                c.totalCents === null &&
-                c.edit.price == null &&
-                c.kind !== "auto_propio";
-              const doubts = c.doubtful
-                .map((d) => DOUBT_LABEL[d])
-                .filter((x): x is string => Boolean(x));
+              const missingPrice = c.totalCents === null && c.edit.price == null && c.kind !== "auto_propio";
+              const doubts = c.doubtful.map((d) => DOUBT_LABEL[d]).filter((x): x is string => Boolean(x));
               return (
                 <Ticket
                   key={c.id}
@@ -613,9 +536,7 @@ export function OptionsBoard({
                   flag={doubts.length ? <DoubtFlag items={doubts} /> : null}
                   price={
                     missingPrice ? (
-                      <span className="text-base text-signal">
-                        Falta el precio
-                      </span>
+                      <span className="text-base text-signal">Falta el precio</span>
                     ) : c.totalCents === null && c.edit.price != null ? (
                       <span className="text-base">{`US$ ${c.edit.price.toLocaleString("es-AR")}`}</span>
                     ) : c.totalCents !== null ? (
@@ -631,9 +552,7 @@ export function OptionsBoard({
                         type="button"
                         className="grid size-10 place-items-center rounded-xl text-ink-soft hover:bg-paper hover:text-ink"
                         aria-label="Editar"
-                        onClick={() =>
-                          setEditing((e) => (e === c.id ? null : c.id))
-                        }
+                        onClick={() => setEditing((e) => (e === c.id ? null : c.id))}
                       >
                         <Icon name="edit" />
                       </button>
@@ -655,16 +574,11 @@ export function OptionsBoard({
                   }
                   footer={
                     editing === c.id ? (
-                      <OfferEditor
-                        card={c}
-                        onSave={(edit) => saveEdit(c, edit)}
-                        onCancel={() => setEditing(null)}
-                      />
+                      <OfferEditor card={c} onSave={(edit) => saveEdit(c, edit)} onCancel={() => setEditing(null)} />
                     ) : null
                   }
                 >
-                  {c.inProposals !== null &&
-                  c.ownerType !== "lodging_option" ? (
+                  {c.inProposals !== null && c.ownerType !== "lodging_option" ? (
                     <label className="mt-1 flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-soft">
                       <input
                         type="checkbox"
@@ -674,8 +588,7 @@ export function OptionsBoard({
                           await inProposalsAction(
                             tripId,
                             {
-                              ownerType: c.ownerType as
-                                "transport_option" | "activity",
+                              ownerType: c.ownerType as "transport_option" | "activity",
                               id: c.id,
                             },
                             e.target.checked,
@@ -695,24 +608,19 @@ export function OptionsBoard({
 
       {!cards.length && !jobs.length ? (
         <Note>
-          Para comparar necesito <b>cómo vas y cómo volvés</b> y, si dormís
-          allá, <b>dónde te alojás</b>. Subí capturas de 2 o 3 transportes y 2
-          alojamientos.
+          Para comparar necesito <b>cómo vas y cómo volvés</b> y, si dormís allá, <b>dónde te alojás</b>. Subí capturas
+          de 2 o 3 transportes y 2 alojamientos.
         </Note>
       ) : null}
 
       <div className="no-print fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 border-t border-line bg-surface shadow-[0_-6px_20px_rgb(0_0_0/0.08)] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-3 px-4 py-3">
           <p className="min-w-44 flex-1 text-[0.95rem]" role="status">
-            {reading
-              ? `Leyendo ${reading} captura${reading > 1 ? "s" : ""}… `
-              : ""}
+            {reading ? `Leyendo ${reading} captura${reading > 1 ? "s" : ""}… ` : ""}
             {ready ? (
               <>
                 <b>Listo.</b> {status.comboCount}{" "}
-                {status.comboCount === 1
-                  ? "combinación posible."
-                  : "combinaciones posibles."}
+                {status.comboCount === 1 ? "combinación posible." : "combinaciones posibles."}
               </>
             ) : (
               `Para comparar falta ${status.missing.join(", ")}.`

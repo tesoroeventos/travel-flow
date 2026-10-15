@@ -61,8 +61,7 @@ export function legMinutes(l: PropLeg): number | null {
 export function buildPlans(legs: PropLeg[]): PropLeg[][] {
   const plans: PropLeg[][] = [];
   const pairs = new Map<string, PropLeg[]>();
-  for (const l of legs)
-    if (l.pairId) pairs.set(l.pairId, [...(pairs.get(l.pairId) ?? []), l]);
+  for (const l of legs) if (l.pairId) pairs.set(l.pairId, [...(pairs.get(l.pairId) ?? []), l]);
   for (const group of pairs.values()) {
     const out = group.find((l) => l.leg === "outbound");
     const ret = group.find((l) => l.leg === "return");
@@ -87,8 +86,7 @@ export function buildCombos(
       const m = legMinutes(l);
       minutes = m === null || minutes === null ? null : minutes + m;
     }
-    const legComfort =
-      legs.reduce((s, l) => s + comfortOf(l.comfort), 0) / legs.length;
+    const legComfort = legs.reduce((s, l) => s + comfortOf(l.comfort), 0) / legs.length;
     for (const lod of lodgings) {
       combos.push({
         key: `${legIds.join("+")}|${lod.id}`,
@@ -127,10 +125,7 @@ export function pickProposals(combos: Combo[]): ProposalCard[] {
 }
 
 /** Qué falta cargar para poder comparar. */
-export function missingForProposals(
-  legs: PropLeg[],
-  lodgingCount: number,
-): string[] {
+export function missingForProposals(legs: PropLeg[], lodgingCount: number): string[] {
   const missing: string[] = [];
   const plans = buildPlans(legs);
   if (!plans.length) {

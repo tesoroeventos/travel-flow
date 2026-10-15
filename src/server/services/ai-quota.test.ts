@@ -19,13 +19,10 @@ describe("límite diario de IA", () => {
       ok: false,
       error: {
         code: "limit",
-        message:
-          "Llegaste al límite de lecturas de hoy. Mañana se renueva; mientras tanto podés cargar a mano.",
+        message: "Llegaste al límite de lecturas de hoy. Mañana se renueva; mientras tanto podés cargar a mano.",
       },
     });
-    expect(await consumeAiQuota(db, ctx.userId, "2026-10-16", 2)).toMatchObject(
-      { ok: true },
-    );
+    expect(await consumeAiQuota(db, ctx.userId, "2026-10-16", 2)).toMatchObject({ ok: true });
   });
 
   it("cada usuario tiene su propio límite", async () => {

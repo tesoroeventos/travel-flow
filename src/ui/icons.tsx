@@ -2,8 +2,7 @@ const PATHS = {
   plane:
     "M10.5 13.5 3 11l1.5-1.5 7.5 1 4-4.5c1-1 2.6-1.4 3.3-.7s.3 2.3-.7 3.3l-4.5 4 1 7.5L13.6 21l-2.5-7.5M6 17l2.5-1 1 1-1 2.5",
   bus: "M7 3h10a3 3 0 0 1 3 3v12H4V6a3 3 0 0 1 3-3zM4 11h16M8 21v-3M16 21v-3M8 14.5h.01M16 14.5h.01",
-  train:
-    "M8 3h8a3 3 0 0 1 3 3v11H5V6a3 3 0 0 1 3-3zM5 10h14M9 21l2-4M15 21l-2-4M9 13.5h.01M15 13.5h.01",
+  train: "M8 3h8a3 3 0 0 1 3 3v11H5V6a3 3 0 0 1 3-3zM5 10h14M9 21l2-4M15 21l-2-4M9 13.5h.01M15 13.5h.01",
   car: "M5 16H3v-4l2-5h11l3 5h2v4h-2M9.5 16.5h5M5 12h14M7.5 18.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16.5 18.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
   key: "M8 19a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 12l9-9M17 6l3 3M15 8l2 2",
   bed: "M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6M7 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
@@ -22,13 +21,7 @@ const PATHS = {
 
 export type IconName = keyof typeof PATHS;
 
-export function Icon({
-  name,
-  className = "size-5",
-}: {
-  name: IconName;
-  className?: string;
-}) {
+export function Icon({ name, className = "size-5" }: { name: IconName; className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"

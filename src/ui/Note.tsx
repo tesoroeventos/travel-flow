@@ -10,10 +10,7 @@ export function Note({
   children: ReactNode;
   className?: string;
 }) {
-  const style =
-    tone === "warn"
-      ? "bg-signal-soft border-signal-line/50"
-      : "bg-route-soft border-transparent";
+  const style = tone === "warn" ? "bg-signal-soft border-signal-line/50" : "bg-route-soft border-transparent";
   return (
     <div
       className={`flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-[0.95rem] ${style} ${className}`}

@@ -32,31 +32,21 @@ function legName(data: LoadedTrip, id: string): string {
   return `${MODE[t.mode] ?? "Transporte"} ${t.leg === "outbound" ? "ida" : "vuelta"}${t.provider ? ` ${t.provider}` : ""}`;
 }
 
-export default async function ProposalsPage({
-  params,
-  searchParams,
-}: PageProps<"/viajes/[id]/propuestas">) {
+export default async function ProposalsPage({ params, searchParams }: PageProps<"/viajes/[id]/propuestas">) {
   const { id } = await params;
   const { data } = await getTripData(id);
   const res = proposalsFromLoaded(data, {
     swaps: parseSwaps(await searchParams),
   });
   const cur = data.trip.baseCurrency;
-  const missing = [
-    ...res.missing,
-    ...(res.needsUsdRate ? ["a cuánto tomás el dólar"] : []),
-  ];
+  const missing = [...res.missing, ...(res.needsUsdRate ? ["a cuánto tomás el dólar"] : [])];
 
   if (missing.length || !res.cards.length) {
     return (
       <main className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6 md:px-0">
         <h2 className="font-display text-3xl font-bold">Tus 3 opciones</h2>
         <Note tone="warn">
-          Para comparar falta{" "}
-          {missing.length
-            ? missing.join(", ")
-            : "al menos una combinación con precio"}
-          .
+          Para comparar falta {missing.length ? missing.join(", ") : "al menos una combinación con precio"}.
         </Note>
         <Link
           href={`/viajes/${id}/opciones`}
@@ -79,32 +69,20 @@ export default async function ProposalsPage({
     ...data.lodging.map((l) => [l.id, "bed"] as const),
     ...data.activities.map((a) => [a.id, "ticket"] as const),
   ]);
-  const planIndex = (legIds: string[]) =>
-    res.plans.findIndex(
-      (p) => p.map((l) => l.id).join("+") === legIds.join("+"),
-    );
+  const planIndex = (legIds: string[]) => res.plans.findIndex((p) => p.map((l) => l.id).join("+") === legIds.join("+"));
   const nights = daysDiff(
     localDate(data.trip.startAt.toISOString(), data.trip.startTz),
     localDate(data.trip.endAt.toISOString(), data.trip.endTz),
   );
-  const all = res.all
-    .filter((c) => c.costCents !== null)
-    .sort((a, b) => a.costCents! - b.costCents!);
+  const all = res.all.filter((c) => c.costCents !== null).sort((a, b) => a.costCents! - b.costCents!);
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-5 px-4 py-6 md:px-0">
       <div>
-        <h2 className="font-display text-3xl font-bold">
-          Tus 3 opciones para {data.trip.destinationLabel}
-        </h2>
+        <h2 className="font-display text-3xl font-bold">Tus 3 opciones para {data.trip.destinationLabel}</h2>
         <p className="text-ink-soft">
-          {plural(
-            res.comboCount,
-            "combinación revisada",
-            "combinaciones revisadas",
-          )}{" "}
-          · {plural(data.travelers.length, "persona", "personas")} ·{" "}
-          {plural(nights, "noche", "noches")}
+          {plural(res.comboCount, "combinación revisada", "combinaciones revisadas")} ·{" "}
+          {plural(data.travelers.length, "persona", "personas")} · {plural(nights, "noche", "noches")}
         </p>
       </div>
       {res.cards.map((v) => (
@@ -117,20 +95,13 @@ export default async function ProposalsPage({
           planLabels={planLabels}
           lodgingLabels={lodgingLabels}
           planIndex={planIndex(v.combo.legIds)}
-          lodgingIndex={res.lodgings.findIndex(
-            (l) => l.id === v.combo.lodgingId,
-          )}
+          lodgingIndex={res.lodgings.findIndex((l) => l.id === v.combo.lodgingId)}
         />
       ))}
       <details className="rounded-2xl bg-surface shadow-card">
-        <summary className="cursor-pointer px-4.5 py-3.5 font-bold">
-          Ver las {all.length} combinaciones
-        </summary>
+        <summary className="cursor-pointer px-4.5 py-3.5 font-bold">Ver las {all.length} combinaciones</summary>
         <div className="overflow-x-auto px-2 pb-3">
-          <table
-            aria-label="Todas las combinaciones"
-            className="w-full min-w-[520px] text-sm"
-          >
+          <table aria-label="Todas las combinaciones" className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="text-left text-xs tracking-wider text-ink-soft uppercase">
                 <th className="px-2.5 py-2">Transporte</th>
@@ -143,22 +114,10 @@ export default async function ProposalsPage({
             <tbody>
               {all.map((c) => (
                 <tr key={c.key} className="border-t border-line align-top">
-                  <td className="px-2.5 py-2">
-                    {planLabels[planIndex(c.legIds)]}
-                  </td>
-                  <td className="px-2.5 py-2">
-                    {
-                      lodgingLabels[
-                        res.lodgings.findIndex((l) => l.id === c.lodgingId)
-                      ]
-                    }
-                  </td>
-                  <td className="num px-2.5 py-2 text-right whitespace-nowrap">
-                    {fmtMoney(c.costCents!, cur)}
-                  </td>
-                  <td className="num px-2.5 py-2 text-right whitespace-nowrap">
-                    {fmtTravel(c.minutes)}
-                  </td>
+                  <td className="px-2.5 py-2">{planLabels[planIndex(c.legIds)]}</td>
+                  <td className="px-2.5 py-2">{lodgingLabels[res.lodgings.findIndex((l) => l.id === c.lodgingId)]}</td>
+                  <td className="num px-2.5 py-2 text-right whitespace-nowrap">{fmtMoney(c.costCents!, cur)}</td>
+                  <td className="num px-2.5 py-2 text-right whitespace-nowrap">{fmtTravel(c.minutes)}</td>
                   <td className="num px-2.5 py-2 text-right">
                     {(Math.round(c.comfort * 10) / 10).toLocaleString("es-AR")}
                   </td>

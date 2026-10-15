@@ -1,13 +1,7 @@
 import Link from "next/link";
 
 /** Marca: punto · tramo punteado · punto, y el nombre. */
-export function Brand({
-  className = "",
-  size = "md",
-}: {
-  className?: string;
-  size?: "md" | "lg";
-}) {
+export function Brand({ className = "", size = "md" }: { className?: string; size?: "md" | "lg" }) {
   return (
     <Link
       href="/"

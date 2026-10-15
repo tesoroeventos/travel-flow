@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseCarEstimate,
-  parseOffers,
-  parseTripDraft,
-  toNumber,
-} from "./schemas";
+import { parseCarEstimate, parseOffers, parseTripDraft, toNumber } from "./schemas";
 
 describe("lectura de la respuesta de la IA", () => {
   it("normaliza precio en texto, recorta y descarta lo inválido", () => {
@@ -135,11 +130,8 @@ describe("lectura de la respuesta de la IA", () => {
       fuelPrice: 1300,
     });
     expect(parseCarEstimate({ distancia_km: 1650 }, null)).toBeNull();
-    expect(
-      parseCarEstimate(
-        { distancia_km: 100, horas_manejo: 1, precio_litro: 1000 },
-        6.5,
-      ),
-    ).toMatchObject({ consumptionLPer100: 6.5 });
+    expect(parseCarEstimate({ distancia_km: 100, horas_manejo: 1, precio_litro: 1000 }, 6.5)).toMatchObject({
+      consumptionLPer100: 6.5,
+    });
   });
 });

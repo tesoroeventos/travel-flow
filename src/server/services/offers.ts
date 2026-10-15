@@ -1,18 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { carCostItems } from "@/domain/costs/car";
 import { formatMoney, money } from "@/domain/money/money";
-import {
-  addDays,
-  localDate,
-  localTime,
-  zonedToUtc,
-} from "@/domain/time/calendar";
-import type {
-  CarEstimate,
-  OfferBasis,
-  OfferDraft,
-  OfferKind,
-} from "@/integrations/ai/types";
+import { addDays, localDate, localTime, zonedToUtc } from "@/domain/time/calendar";
+import type { CarEstimate, OfferBasis, OfferDraft, OfferKind } from "@/integrations/ai/types";
 import type { Db } from "../db/client";
 import { costItems } from "../db/schema";
 import type { Ctx } from "../context";
@@ -22,11 +12,7 @@ import { itemsTotalCents, ownerItems } from "./costing";
 import { loadTrip, type LoadedTrip } from "./load-trip";
 import { deleteOption } from "./options";
 
-export type OfferSource =
-  | { kind: "captura" }
-  | { kind: "link"; url: string }
-  | { kind: "manual" }
-  | { kind: "auto" };
+export type OfferSource = { kind: "captura" } | { kind: "link"; url: string } | { kind: "manual" } | { kind: "auto" };
 export type OfferOwner = "transport_option" | "lodging_option" | "activity";
 export interface SavedOffer {
   ownerType: OfferOwner;
@@ -81,19 +67,14 @@ const KIND_OF: Partial<Record<Mode, CardKind>> = {
   own_car: "auto_propio",
   rental_car: "auto_alquiler",
 };
-const UNIT_OF: Record<
-  OfferBasis,
-  "total" | "per_person" | "per_night" | "per_person_night" | "per_day"
-> = {
+const UNIT_OF: Record<OfferBasis, "total" | "per_person" | "per_night" | "per_person_night" | "per_day"> = {
   total: "total",
   por_persona: "per_person",
   por_noche: "per_night",
   por_persona_por_noche: "per_person_night",
   por_dia: "per_day",
 };
-const BASIS_OF = Object.fromEntries(
-  Object.entries(UNIT_OF).map(([k, v]) => [v, k]),
-) as Record<string, OfferBasis>;
+const BASIS_OF = Object.fromEntries(Object.entries(UNIT_OF).map(([k, v]) => [v, k])) as Record<string, OfferBasis>;
 const BASIS_LABEL: Record<OfferBasis, string> = {
   total: "total",
   por_persona: "por persona",
@@ -103,11 +84,7 @@ const BASIS_LABEL: Record<OfferBasis, string> = {
 };
 
 const tableOf = (k: OfferKind): OfferOwner =>
-  k === "alojamiento"
-    ? "lodging_option"
-    : k === "actividad" || k === "otro"
-      ? "activity"
-      : "transport_option";
+  k === "alojamiento" ? "lodging_option" : k === "actividad" || k === "otro" ? "activity" : "transport_option";
 const iso = (d: Date) => d.toISOString();
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -131,16 +108,11 @@ export function splitNotes(notes: string | null): {
   };
 }
 const withMark = (text: string, doubtful: string[]) =>
-  (doubtful.length ? `${text} [revisar:${doubtful.join(",")}]`.trim() : text) ||
-  null;
+  (doubtful.length ? `${text} [revisar:${doubtful.join(",")}]`.trim() : text) || null;
 
 /* ───────── horarios ───────── */
 
-function toUtc(
-  local: string | null,
-  tz: string,
-  defaultTime: string,
-): string | null {
+function toUtc(local: string | null, tz: string, defaultTime: string): string | null {
   if (!local) return null;
   const date = local.slice(0, 10);
   const time = local.length > 10 ? local.slice(11, 16) : defaultTime;
@@ -148,8 +120,7 @@ function toUtc(
 }
 const toLocal = (utc: string | null | undefined, tz: string) =>
   utc ? `${localDate(utc, tz)}T${localTime(utc, tz)}` : null;
-const addMin = (utc: string, min: number) =>
-  new Date(Date.parse(utc) + min * 60_000).toISOString();
+const addMin = (utc: string, min: number) => new Date(Date.parse(utc) + min * 60_000).toISOString();
 
 function legTz(trip: TripRow, leg: "outbound" | "return" | "internal") {
   if (leg === "outbound") return { dep: trip.startTz, arr: trip.endTz };
@@ -163,11 +134,9 @@ function segmentsFor(
   d: Pick<OfferDraft, "depart" | "arrive" | "durationMin" | "from" | "to">,
 ) {
   const tz = legTz(trip, leg);
-  const dep =
-    d.depart && d.depart.length > 10 ? toUtc(d.depart, tz.dep, "00:00") : null;
+  const dep = d.depart && d.depart.length > 10 ? toUtc(d.depart, tz.dep, "00:00") : null;
   if (!dep) return [];
-  let arr =
-    d.arrive && d.arrive.length > 10 ? toUtc(d.arrive, tz.arr, "00:00") : null;
+  let arr = d.arrive && d.arrive.length > 10 ? toUtc(d.arrive, tz.arr, "00:00") : null;
   if ((!arr || arr <= dep) && d.durationMin) arr = addMin(dep, d.durationMin);
   if (!arr || arr <= dep) return [];
   return [
@@ -243,13 +212,7 @@ async function addPriceItem(
   });
 }
 
-async function saveOne(
-  db: Db,
-  ctx: Ctx,
-  trip: TripRow,
-  d: OfferDraft,
-  src: OfferSource,
-): Promise<SavedOffer[]> {
+async function saveOne(db: Db, ctx: Ctx, trip: TripRow, d: OfferDraft, src: OfferSource): Promise<SavedOffer[]> {
   const r = makeRepos(db);
   const tripId = trip.id;
   const label = sourceLabel(src);
@@ -261,25 +224,9 @@ async function saveOne(
     const l = await r.lodging.create(ctx, {
       tripId,
       name: d.name || "Alojamiento",
-      kind: /airbnb|depto|departamento|caba[ñn]a/i.test(
-        `${d.company} ${d.name}`,
-      )
-        ? "apartment"
-        : "hotel",
-      checkInAt: new Date(
-        toUtc(
-          d.depart ?? localDate(iso(trip.startAt), trip.startTz),
-          trip.endTz,
-          "14:00",
-        )!,
-      ),
-      checkOutAt: new Date(
-        toUtc(
-          d.arrive ?? localDate(iso(trip.endAt), trip.endTz),
-          trip.endTz,
-          "10:00",
-        )!,
-      ),
+      kind: /airbnb|depto|departamento|caba[ñn]a/i.test(`${d.company} ${d.name}`) ? "apartment" : "hotel",
+      checkInAt: new Date(toUtc(d.depart ?? localDate(iso(trip.startAt), trip.startTz), trip.endTz, "14:00")!),
+      checkOutAt: new Date(toUtc(d.arrive ?? localDate(iso(trip.endAt), trip.endTz), trip.endTz, "10:00")!),
       tz: trip.endTz,
       rating: ratingFromScore(d.score),
       qualityRating: d.comfort,
@@ -287,16 +234,7 @@ async function saveOne(
       url,
       source: src.kind,
     });
-    await addPriceItem(
-      db,
-      ctx,
-      tripId,
-      "lodging_option",
-      l.id,
-      d,
-      "lodging",
-      label,
-    );
+    await addPriceItem(db, ctx, tripId, "lodging_option", l.id, d, "lodging", label);
     return [{ ownerType: "lodging_option", id: l.id, pairId: null }];
   }
 
@@ -305,23 +243,13 @@ async function saveOne(
       tripId,
       name: d.name || "Actividad",
       date: d.depart?.slice(0, 10) ?? firstFullDay(trip),
-      startTime:
-        d.depart && d.depart.length > 10 ? d.depart.slice(11, 16) : null,
+      startTime: d.depart && d.depart.length > 10 ? d.depart.slice(11, 16) : null,
       durationMin: d.durationMin ?? 60,
       notes,
       url,
       source: src.kind,
     });
-    await addPriceItem(
-      db,
-      ctx,
-      tripId,
-      "activity",
-      a.id,
-      d,
-      d.kind === "actividad" ? "activities" : "other",
-      label,
-    );
+    await addPriceItem(db, ctx, tripId, "activity", a.id, d, d.kind === "actividad" ? "activities" : "other", label);
     return [{ ownerType: "activity", id: a.id, pairId: null }];
   }
 
@@ -359,21 +287,8 @@ async function saveOne(
     });
     if (!isSecond) {
       const cat =
-        leg === "outbound"
-          ? "transport_outbound"
-          : leg === "return"
-            ? "transport_return"
-            : "transport_internal";
-      await addPriceItem(
-        db,
-        ctx,
-        tripId,
-        "transport_option",
-        t.id,
-        d,
-        cat,
-        label,
-      );
+        leg === "outbound" ? "transport_outbound" : leg === "return" ? "transport_return" : "transport_internal";
+      await addPriceItem(db, ctx, tripId, "transport_option", t.id, d, cat, label);
     }
     out.push({ ownerType: "transport_option", id: t.id, pairId });
   }
@@ -389,21 +304,13 @@ export async function saveOffers(
 ): Promise<SavedOffer[]> {
   const trip = await makeRepos(db).trips.require(ctx, tripId);
   const saved: SavedOffer[] = [];
-  for (const d of drafts)
-    saved.push(...(await saveOne(db, ctx, trip, d, source)));
+  for (const d of drafts) saved.push(...(await saveOne(db, ctx, trip, d, source)));
   return saved;
 }
 
 /* ───────── auto propio ───────── */
 
-async function writeCarItems(
-  db: Db,
-  ctx: Ctx,
-  trip: TripRow,
-  rowId: string,
-  leg: "outbound" | "return",
-  c: CarEdit,
-) {
+async function writeCarItems(db: Db, ctx: Ctx, trip: TripRow, rowId: string, leg: "outbound" | "return", c: CarEdit) {
   const items = carCostItems({
     km: String(c.km),
     consumptionLPer100: String(c.consumptionLPer100),
@@ -448,17 +355,8 @@ async function writeCarItems(
   }
 }
 
-function carSegments(
-  trip: TripRow,
-  leg: "outbound" | "return",
-  hours: number,
-  from: string,
-  to: string,
-) {
-  const date =
-    leg === "outbound"
-      ? localDate(iso(trip.startAt), trip.startTz)
-      : localDate(iso(trip.endAt), trip.endTz);
+function carSegments(trip: TripRow, leg: "outbound" | "return", hours: number, from: string, to: string) {
+  const date = leg === "outbound" ? localDate(iso(trip.startAt), trip.startTz) : localDate(iso(trip.endAt), trip.endTz);
   const tz = legTz(trip, leg);
   const dep = zonedToUtc(date, "08:00", tz.dep);
   return [
@@ -518,20 +416,7 @@ export async function saveCarOffer(
 /* ───────── vista ───────── */
 
 const DOW = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
-const MON = [
-  "ene",
-  "feb",
-  "mar",
-  "abr",
-  "may",
-  "jun",
-  "jul",
-  "ago",
-  "sep",
-  "oct",
-  "nov",
-  "dic",
-];
+const MON = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 export function fmtDay(date: string): string {
   const d = new Date(`${date}T12:00:00Z`);
   return `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`;
@@ -542,8 +427,7 @@ export function fmtDuration(min: number): string {
   if (!h) return `${m} min`;
   return m ? `${h} h ${String(m).padStart(2, "0")}` : `${h} h`;
 }
-const fmtMoney = (cents: number, currency: string) =>
-  formatMoney(money(cents, currency as never)).replace(/\s/g, " ");
+const fmtMoney = (cents: number, currency: string) => formatMoney(money(cents, currency as never)).replace(/\s/g, " ");
 
 function carOf(data: LoadedTrip, rowId: string): CarEdit | undefined {
   const items = ownerItems(data, "transport_option", [rowId]);
@@ -584,29 +468,19 @@ function priceNote(
     i.currency !== data.trip.baseCurrency || basis !== "total"
       ? `${i.currency === "USD" ? `US$ ${(i.amountCents / 100).toLocaleString("es-AR")}` : fmtMoney(i.amountCents, i.currency)} ${BASIS_LABEL[basis]}`
       : "";
-  if (total === null)
-    return [orig, "falta el dólar"].filter(Boolean).join(" · ");
+  if (total === null) return [orig, "falta el dólar"].filter(Boolean).join(" · ");
   const tot =
-    perNights !== null
-      ? `total ${perNights} noche${perNights === 1 ? "" : "s"}`
-      : n > 1
-        ? `total para ${n}`
-        : "total";
+    perNights !== null ? `total ${perNights} noche${perNights === 1 ? "" : "s"}` : n > 1 ? `total para ${n}` : "total";
   return [orig, tot].filter(Boolean).join(" · ");
 }
 
-export function offerCardsFromLoaded(
-  data: LoadedTrip,
-  opts: { today?: string } = {},
-): OfferCard[] {
+export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } = {}): OfferCard[] {
   const day = opts.today ?? today();
   const trip = data.trip;
   const cards: OfferCard[] = [];
 
   for (const t of data.transport) {
-    const sibling = t.pairId
-      ? data.transport.find((x) => x.pairId === t.pairId && x.id !== t.id)
-      : undefined;
+    const sibling = t.pairId ? data.transport.find((x) => x.pairId === t.pairId && x.id !== t.id) : undefined;
     if (sibling && t.leg === "return") continue;
     const ids = sibling ? [t.id, sibling.id] : [t.id];
     const items = ownerItems(data, "transport_option", ids);
@@ -615,14 +489,9 @@ export function offerCardsFromLoaded(
     const seg = t.segments[0];
     const tz = legTz(trip, t.leg);
     const car = t.mode === "own_car" ? carOf(data, t.id) : undefined;
-    const minutes = seg
-      ? Math.round(
-          (Date.parse(seg.arriveUtc) - Date.parse(seg.departUtc)) / 60_000,
-        )
-      : null;
+    const minutes = seg ? Math.round((Date.parse(seg.arriveUtc) - Date.parse(seg.departUtc)) / 60_000) : null;
     let when = "";
-    if (car)
-      when = `${fmtDuration(Math.round(car.hours * 60))} de manejo por tramo`;
+    if (car) when = `${fmtDuration(Math.round(car.hours * 60))} de manejo por tramo`;
     else if (seg) {
       const dl = localDate(seg.departUtc, tz.dep);
       const al = localDate(seg.arriveUtc, tz.arr);
@@ -632,13 +501,7 @@ export function offerCardsFromLoaded(
     cards.push({
       ownerType: "transport_option",
       id: t.id,
-      group: sibling
-        ? "ida_y_vuelta"
-        : t.leg === "outbound"
-          ? "ida"
-          : t.leg === "return"
-            ? "vuelta"
-            : "destino",
+      group: sibling ? "ida_y_vuelta" : t.leg === "outbound" ? "ida" : t.leg === "return" ? "vuelta" : "destino",
       kind: KIND_OF[t.mode] ?? "otro",
       name:
         t.mode === "own_car"
@@ -652,24 +515,14 @@ export function offerCardsFromLoaded(
         : text,
       score: null,
       totalCents: total,
-      priceNote: car
-        ? "nafta + peajes, ida y vuelta"
-        : priceNote(data, items, total, null),
+      priceNote: car ? "nafta + peajes, ida y vuelta" : priceNote(data, items, total, null),
       currency: trip.baseCurrency,
       doubtful,
       inProposals: t.leg === "internal" ? t.inProposals : null,
       source: t.source,
       edit: {
-        kind: (KIND_OF[t.mode] === "auto_propio"
-          ? "otro"
-          : KIND_OF[t.mode]) as OfferKind,
-        direction: sibling
-          ? "ida_y_vuelta"
-          : t.leg === "return"
-            ? "vuelta"
-            : t.leg === "outbound"
-              ? "ida"
-              : null,
+        kind: (KIND_OF[t.mode] === "auto_propio" ? "otro" : KIND_OF[t.mode]) as OfferKind,
+        direction: sibling ? "ida_y_vuelta" : t.leg === "return" ? "vuelta" : t.leg === "outbound" ? "ida" : null,
         name: t.serviceNumber ?? "",
         company: t.provider,
         from: t.fromLabel,
@@ -692,14 +545,9 @@ export function offerCardsFromLoaded(
     const co = localDate(iso(l.checkOutAt), l.tz);
     const nights = Math.max(
       0,
-      Math.round(
-        (Date.parse(`${co}T00:00:00Z`) - Date.parse(`${ci}T00:00:00Z`)) /
-          86_400_000,
-      ),
+      Math.round((Date.parse(`${co}T00:00:00Z`) - Date.parse(`${ci}T00:00:00Z`)) / 86_400_000),
     );
-    const score = l.rating
-      ? `${String(Number(l.rating)).replace(".", ",")}/10`
-      : null;
+    const score = l.rating ? `${String(Number(l.rating)).replace(".", ",")}/10` : null;
     cards.push({
       ownerType: "lodging_option",
       id: l.id,
@@ -784,13 +632,7 @@ async function replacePrice(
   const existing = await db
     .select()
     .from(costItems)
-    .where(
-      and(
-        eq(costItems.tripId, trip.id),
-        eq(costItems.ownerType, ownerType),
-        eq(costItems.ownerId, ownerId),
-      ),
-    );
+    .where(and(eq(costItems.tripId, trip.id), eq(costItems.ownerType, ownerType), eq(costItems.ownerId, ownerId)));
   if (d.price === null) {
     for (const i of existing) await r.costItems.remove(ctx, i.id);
     return;
@@ -803,17 +645,7 @@ async function replacePrice(
     isDemo: false,
   };
   if (existing[0]) await r.costItems.update(ctx, existing[0].id, values);
-  else
-    await addPriceItem(
-      db,
-      ctx,
-      trip.id,
-      ownerType,
-      ownerId,
-      d,
-      category,
-      source,
-    );
+  else await addPriceItem(db, ctx, trip.id, ownerType, ownerId, d, category, source);
 }
 
 export async function updateOffer(
@@ -824,22 +656,14 @@ export async function updateOffer(
 ): Promise<void> {
   const r = makeRepos(db);
   const repo =
-    ref.ownerType === "transport_option"
-      ? r.transport
-      : ref.ownerType === "lodging_option"
-        ? r.lodging
-        : r.activities;
+    ref.ownerType === "transport_option" ? r.transport : ref.ownerType === "lodging_option" ? r.lodging : r.activities;
   const row = await repo.require(ctx, ref.id);
   const data = await loadTrip(db, ctx, row.tripId);
   const self = data.transport.find((t) => t.id === ref.id);
   const outboundOfPair = self?.pairId
-    ? data.transport.find(
-        (t) => t.pairId === self.pairId && t.leg === "outbound",
-      )?.id
+    ? data.transport.find((t) => t.pairId === self.pairId && t.leg === "outbound")?.id
     : undefined;
-  const card = offerCardsFromLoaded(data).find(
-    (c) => c.id === (outboundOfPair ?? ref.id),
-  );
+  const card = offerCardsFromLoaded(data).find((c) => c.id === (outboundOfPair ?? ref.id));
   if (!card) throw new NotFoundError("la opción", ref.id);
   const trip = data.trip;
   const { car, ...rest } = edit;
@@ -847,23 +671,12 @@ export async function updateOffer(
   // Auto propio: se recalculan las partidas de los dos tramos.
   if (card.kind === "auto_propio") {
     const rows = data.transport.filter(
-      (t) =>
-        t.id === card.id ||
-        (t.pairId &&
-          t.pairId === data.transport.find((x) => x.id === card.id)?.pairId),
+      (t) => t.id === card.id || (t.pairId && t.pairId === data.transport.find((x) => x.id === card.id)?.pairId),
     );
     const c = car ?? card.edit.car!;
     for (const t of rows) {
-      for (const i of ownerItems(data, "transport_option", [t.id]))
-        await r.costItems.remove(ctx, i.id);
-      await writeCarItems(
-        db,
-        ctx,
-        trip,
-        t.id,
-        t.leg as "outbound" | "return",
-        c,
-      );
+      for (const i of ownerItems(data, "transport_option", [t.id])) await r.costItems.remove(ctx, i.id);
+      await writeCarItems(db, ctx, trip, t.id, t.leg as "outbound" | "return", c);
       const seg = t.segments[0];
       await r.transport.update(ctx, t.id, {
         distanceKm: c.km,
@@ -928,12 +741,7 @@ export async function updateOffer(
 
   if (ref.ownerType === "transport_option") {
     const t = data.transport.find((x) => x.id === card.id)!;
-    const leg =
-      t.leg === "internal"
-        ? "internal"
-        : merged.direction === "vuelta"
-          ? "return"
-          : "outbound";
+    const leg = t.leg === "internal" ? "internal" : merged.direction === "vuelta" ? "return" : "outbound";
     await r.transport.update(ctx, t.id, {
       leg: wasPair ? t.leg : leg,
       mode: MODE_OF[merged.kind] ?? t.mode,
@@ -951,55 +759,22 @@ export async function updateOffer(
         : leg === "return" && !wasPair
           ? "transport_return"
           : "transport_outbound";
-    await replacePrice(
-      db,
-      ctx,
-      trip,
-      "transport_option",
-      t.id,
-      merged,
-      cat,
-      label,
-    );
+    await replacePrice(db, ctx, trip, "transport_option", t.id, merged, cat, label);
   } else if (ref.ownerType === "lodging_option") {
     await r.lodging.update(ctx, card.id, {
       name: merged.name || "Alojamiento",
-      checkInAt: new Date(
-        toUtc(
-          merged.depart ?? localDate(iso(trip.startAt), trip.startTz),
-          trip.endTz,
-          "14:00",
-        )!,
-      ),
-      checkOutAt: new Date(
-        toUtc(
-          merged.arrive ?? localDate(iso(trip.endAt), trip.endTz),
-          trip.endTz,
-          "10:00",
-        )!,
-      ),
+      checkInAt: new Date(toUtc(merged.depart ?? localDate(iso(trip.startAt), trip.startTz), trip.endTz, "14:00")!),
+      checkOutAt: new Date(toUtc(merged.arrive ?? localDate(iso(trip.endAt), trip.endTz), trip.endTz, "10:00")!),
       rating: ratingFromScore(merged.score),
       qualityRating: merged.comfort,
       notes: merged.detail || null,
     });
-    await replacePrice(
-      db,
-      ctx,
-      trip,
-      "lodging_option",
-      card.id,
-      merged,
-      "lodging",
-      label,
-    );
+    await replacePrice(db, ctx, trip, "lodging_option", card.id, merged, "lodging", label);
   } else {
     await r.activities.update(ctx, card.id, {
       name: merged.name || "Actividad",
       date: merged.depart?.slice(0, 10) ?? firstFullDay(trip),
-      startTime:
-        merged.depart && merged.depart.length > 10
-          ? merged.depart.slice(11, 16)
-          : null,
+      startTime: merged.depart && merged.depart.length > 10 ? merged.depart.slice(11, 16) : null,
       notes: merged.detail || null,
     });
     await replacePrice(
@@ -1022,19 +797,12 @@ export async function setInProposals(
   value: boolean,
 ): Promise<void> {
   const r = makeRepos(db);
-  if (ref.ownerType === "activity")
-    await r.activities.update(ctx, ref.id, { inProposals: value });
+  if (ref.ownerType === "activity") await r.activities.update(ctx, ref.id, { inProposals: value });
   else await r.transport.update(ctx, ref.id, { inProposals: value });
 }
 
 /** Guarda "¿a cuánto tomás el dólar?" como tipo de cambio USD → moneda del viaje. */
-export async function setUsdRate(
-  db: Db,
-  ctx: Ctx,
-  tripId: string,
-  perUsd: number,
-  day: string,
-): Promise<void> {
+export async function setUsdRate(db: Db, ctx: Ctx, tripId: string, perUsd: number, day: string): Promise<void> {
   const r = makeRepos(db);
   const trip = await r.trips.require(ctx, tripId);
   if (trip.baseCurrency === "USD") return;

@@ -22,11 +22,23 @@ git push -u origin master
 | `APP_URL` | La URL pública que te asigne Railway (ej. `https://travelflow.up.railway.app`) |
 | `SEED_DEMO` | `true` para crear el viaje de demostración al iniciar (opcional) |
 | `DEMO_SHARE_TOKEN` | Opcional: fija el enlace de la demo (`/share/<valor>`) |
+| `ANTHROPIC_API_KEY` | La clave de la API de Claude (ver "Clave de la IA" abajo). Sin ella, la app funciona pero las capturas, los links y la frase se cargan a mano. |
+| `AI_DAILY_LIMIT` | Opcional: lecturas con IA por persona y por día (por defecto 60). |
 | `BOOTSTRAP_INVITE_CODE` | Opcional: un código de invitación inicial (hasta 1000 usos). Vence a los 14 días de creado y no se renueva; después usá `npm run invite`. |
 
 4. **Settings → Networking → Generate Domain** para tener la URL pública.
 
 `railway.json` ya define el build (`npm run build`) y el arranque (`npm start`), que aplica las migraciones antes de iniciar.
+
+## Clave de la IA (lectura de capturas y links)
+
+1. Entrá a **platform.claude.com** con tu cuenta y andá a **API Keys → Create Key**. Ponele un nombre (por ejemplo "TravelFlow") y copiala: se muestra una sola vez.
+2. En **Billing** cargá saldo (alcanza con unos pocos dólares para empezar).
+3. En Railway, en las variables de la app, agregá `ANTHROPIC_API_KEY` con esa clave. Railway vuelve a desplegar solo.
+
+Costo de referencia: leer una captura cuesta alrededor de 1 centavo de dólar (modelo `claude-sonnet-5-5`, US$2 por millón de tokens de entrada y US$10 por millón de salida). La frase del viaje usa `claude-haiku-5-5`, más barato. Cada persona tiene un límite diario de lecturas (`AI_DAILY_LIMIT`, 60 por defecto) para que el gasto no se dispare.
+
+`AI_FAKE=1` activa una IA simulada para las pruebas automáticas. La app no arranca si se usa en producción.
 
 ## 3. Códigos de invitación
 

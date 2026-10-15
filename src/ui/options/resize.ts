@@ -14,9 +14,7 @@ export async function shrinkImage(file: File, maxSide = 1600): Promise<Blob> {
     ctx.fillRect(0, 0, w, h);
     ctx.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
-    const blob = await new Promise<Blob | null>((r) =>
-      canvas.toBlob(r, "image/jpeg", 0.85),
-    );
+    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.85));
     return blob ?? file;
   } catch {
     return file;
