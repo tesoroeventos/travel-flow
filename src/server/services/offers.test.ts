@@ -130,6 +130,28 @@ describe("ofertas", () => {
     expect(vta).toMatchObject({ provider: "Flybondi", serviceNumber: "FO 5000", comfortRating: 2, fromLabel: "BRC", toLabel: "AEP" });
   });
 
+  it("si una oferta de la tanda falla al guardarse, no queda nada a medias", async () => {
+    await expect(
+      saveOffers(db, ctx, tripId, [draft({}), draft({ direction: "ida_y_vuelta", price: Number.POSITIVE_INFINITY })], {
+        kind: "captura",
+      }),
+    ).rejects.toThrow();
+    const data = await loadTrip(db, ctx, tripId);
+    expect(data.transport).toHaveLength(0);
+    expect(data.costItems).toHaveLength(0);
+  });
+
+  it("si cambiar el tipo de una opción falla, la opción original sigue estando", async () => {
+    await saveOffers(db, ctx, tripId, [draft({})], { kind: "captura" });
+    const id = (await loadTrip(db, ctx, tripId)).transport[0]!.id;
+    await expect(
+      updateOffer(db, ctx, { ownerType: "transport_option", id }, { kind: "alojamiento", direction: null, price: Number.POSITIVE_INFINITY }),
+    ).rejects.toThrow();
+    const data = await loadTrip(db, ctx, tripId);
+    expect(data.transport.map((t) => t.id)).toEqual([id]);
+    expect(data.lodging).toHaveLength(0);
+  });
+
   it("alojamiento sin horarios toma 14:00 y 10:00; '4 estrellas' guarda rating 8", async () => {
     await saveOffers(
       db,

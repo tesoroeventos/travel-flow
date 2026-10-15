@@ -325,6 +325,15 @@ export async function chooseProposal(
   tripId: string,
   p: { legIds: string[]; lodgingId: string; name: string },
 ): Promise<string> {
+  return db.transaction(async (tx) => chooseProposalTx(tx as unknown as Db, ctx, tripId, p));
+}
+
+async function chooseProposalTx(
+  db: Db,
+  ctx: Ctx,
+  tripId: string,
+  p: { legIds: string[]; lodgingId: string; name: string },
+): Promise<string> {
   const data = await loadTrip(db, ctx, tripId);
   const legIds = new Set(p.legIds);
   for (const id of p.legIds) {

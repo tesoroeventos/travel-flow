@@ -302,6 +302,16 @@ export async function saveOffers(
   drafts: OfferDraft[],
   source: OfferSource,
 ): Promise<SavedOffer[]> {
+  return db.transaction(async (tx) => saveOffersTx(tx as unknown as Db, ctx, tripId, drafts, source));
+}
+
+async function saveOffersTx(
+  db: Db,
+  ctx: Ctx,
+  tripId: string,
+  drafts: OfferDraft[],
+  source: OfferSource,
+): Promise<SavedOffer[]> {
   const trip = await makeRepos(db).trips.require(ctx, tripId);
   const saved: SavedOffer[] = [];
   for (const d of drafts) saved.push(...(await saveOne(db, ctx, trip, d, source)));
@@ -372,6 +382,16 @@ function carSegments(trip: TripRow, leg: "outbound" | "return", hours: number, f
 }
 
 export async function saveCarOffer(
+  db: Db,
+  ctx: Ctx,
+  tripId: string,
+  est: CarEstimate,
+  model: string | null,
+): Promise<SavedOffer[]> {
+  return db.transaction(async (tx) => saveCarOfferTx(tx as unknown as Db, ctx, tripId, est, model));
+}
+
+async function saveCarOfferTx(
   db: Db,
   ctx: Ctx,
   tripId: string,
@@ -649,6 +669,15 @@ async function replacePrice(
 }
 
 export async function updateOffer(
+  db: Db,
+  ctx: Ctx,
+  ref: { ownerType: OfferOwner; id: string },
+  edit: OfferEdit,
+): Promise<void> {
+  return db.transaction(async (tx) => updateOfferTx(tx as unknown as Db, ctx, ref, edit));
+}
+
+async function updateOfferTx(
   db: Db,
   ctx: Ctx,
   ref: { ownerType: OfferOwner; id: string },
