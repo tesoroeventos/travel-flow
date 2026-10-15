@@ -43,3 +43,5 @@ next-env.d.ts
 .superpowers/
 .data/
 .env
+test-results/
+playwright-report/
