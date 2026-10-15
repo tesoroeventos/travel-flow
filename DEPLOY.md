@@ -22,7 +22,7 @@ git push -u origin master
 | `APP_URL` | La URL pública que te asigne Railway (ej. `https://travelflow.up.railway.app`) |
 | `SEED_DEMO` | `true` para crear el viaje de demostración al iniciar (opcional) |
 | `DEMO_SHARE_TOKEN` | Opcional: fija el enlace de la demo (`/share/<valor>`) |
-| `BOOTSTRAP_INVITE_CODE` | Opcional: un código de invitación inicial (hasta 1000 usos). Quitalo cuando ya no lo necesites. |
+| `BOOTSTRAP_INVITE_CODE` | Opcional: un código de invitación inicial (hasta 1000 usos). Vence a los 14 días de creado y no se renueva; después usá `npm run invite`. |
 
 4. **Settings → Networking → Generate Domain** para tener la URL pública.
 

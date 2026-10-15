@@ -77,3 +77,18 @@ export async function verifyLogin(db: Db, emailInput: string, password: string):
   if (!member) return bad;
   return ok({ userId: user.id, workspaceId: member.workspaceId });
 }
+
+const BOOTSTRAP_DAYS = 14;
+
+/**
+ * Asegura un código de invitación inicial (BOOTSTRAP_INVITE_CODE): hasta 1000 usos y vence a los
+ * 14 días de creado. No se renueva en cada arranque, así que deja de servir aunque quede configurado.
+ */
+export async function ensureBootstrapInvite(db: Db, rawCode: string, now = new Date()): Promise<void> {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) return;
+  await db
+    .insert(inviteCodes)
+    .values({ code, maxUses: 1000, expiresAt: new Date(now.getTime() + BOOTSTRAP_DAYS * 86_400_000) })
+    .onConflictDoNothing();
+}

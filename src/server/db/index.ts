@@ -2,14 +2,14 @@ import "server-only";
 import path from "node:path";
 import { mkdirSync } from "node:fs";
 import { createDb, PGLITE_PREFIX, type Db } from "./client";
-import { inviteCodes } from "./schema";
 import { memoizeWithRetry } from "./memo";
 
-/** Si BOOTSTRAP_INVITE_CODE está definido, asegura que exista ese código de invitación (primer acceso y pruebas). */
+/** Si BOOTSTRAP_INVITE_CODE está definido, asegura ese código inicial (vence a los 14 días). */
 async function bootstrapInvite(db: Db): Promise<void> {
-  const code = process.env.BOOTSTRAP_INVITE_CODE?.trim().toUpperCase();
+  const code = process.env.BOOTSTRAP_INVITE_CODE;
   if (!code) return;
-  await db.insert(inviteCodes).values({ code, maxUses: 1000, expiresAt: null }).onConflictDoNothing();
+  const { ensureBootstrapInvite } = await import("../auth/register");
+  await ensureBootstrapInvite(db, code);
 }
 
 const globalForDb = globalThis as unknown as { __travelflowGetDb?: () => Promise<Db> };

@@ -79,3 +79,16 @@ describe("verifyLogin", () => {
     });
   });
 });
+
+describe("ensureBootstrapInvite", () => {
+  it("crea el código con vencimiento a 14 días y no lo renueva", async () => {
+    const { ensureBootstrapInvite } = await import("./register");
+    const db = await createTestDb();
+    const now = new Date("2027-01-01T00:00:00Z");
+    await ensureBootstrapInvite(db, "inicio2027", now);
+    await ensureBootstrapInvite(db, "INICIO2027", new Date("2027-03-01T00:00:00Z"));
+    const rows = await db.select().from(inviteCodes).where(eq(inviteCodes.code, "INICIO2027"));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ maxUses: 1000, expiresAt: new Date("2027-01-15T00:00:00Z") });
+  });
+});
