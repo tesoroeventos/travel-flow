@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const control =
@@ -11,15 +14,15 @@ interface FieldShell {
   className?: string;
 }
 
-function Shell({ label, name, error, hint, className, children }: FieldShell & { children: ReactNode }) {
+function Shell({ id, label, error, hint, className, children }: Omit<FieldShell, "name"> & { id: string; children: ReactNode }) {
   return (
     <div className={className}>
-      <label htmlFor={name} className="mb-1 block text-sm font-medium text-ink">
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-ink">
         {label}
       </label>
       {children}
       {error ? (
-        <p id={`${name}-error`} className="mt-1 text-sm text-alert" role="alert">
+        <p id={`${id}-error`} className="mt-1 text-sm text-alert" role="alert">
           {error}
         </p>
       ) : hint ? (
@@ -37,13 +40,14 @@ export function Field({
   className,
   ...input
 }: FieldShell & Omit<InputHTMLAttributes<HTMLInputElement>, "name">) {
+  const id = useId();
   return (
-    <Shell label={label} name={name} error={error} hint={hint} className={className}>
+    <Shell id={id} label={label} error={error} hint={hint} className={className}>
       <input
-        id={name}
+        id={id}
         name={name}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${name}-error` : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         className={control}
         {...input}
       />
@@ -60,9 +64,10 @@ export function SelectField({
   options,
   ...select
 }: FieldShell & Omit<SelectHTMLAttributes<HTMLSelectElement>, "name"> & { options: { value: string; label: string }[] }) {
+  const id = useId();
   return (
-    <Shell label={label} name={name} error={error} hint={hint} className={className}>
-      <select id={name} name={name} aria-invalid={error ? true : undefined} className={control} {...select}>
+    <Shell id={id} label={label} error={error} hint={hint} className={className}>
+      <select id={id} name={name} aria-invalid={error ? true : undefined} className={control} {...select}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -81,9 +86,10 @@ export function TextAreaField({
   className,
   ...ta
 }: FieldShell & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "name">) {
+  const id = useId();
   return (
-    <Shell label={label} name={name} error={error} hint={hint} className={className}>
-      <textarea id={name} name={name} rows={3} className={control} {...ta} />
+    <Shell id={id} label={label} error={error} hint={hint} className={className}>
+      <textarea id={id} name={name} rows={3} className={control} {...ta} />
     </Shell>
   );
 }

@@ -64,6 +64,30 @@ export function lodgingNights(l: LoadedTrip["lodging"][number]): number | null {
   }
 }
 
+/** Convierte una partida guardada en la entrada del motor de costos. */
+export function toCostInput(data: LoadedTrip, i: LoadedTrip["costItems"][number]): CostItemInput {
+  const lodging = i.ownerType === "lodging_option" ? data.lodging.find((l) => l.id === i.ownerId) : undefined;
+  const paid = data.bookings.some(
+    (b) => b.paymentStatus === "paid" && b.ownerType === i.ownerType && b.ownerId === i.ownerId,
+  );
+  return {
+    id: i.id,
+    label: i.label,
+    amountCents: i.amountCents,
+    currency: i.currency,
+    unit: i.unit,
+    quantity: i.quantity,
+    category: i.category,
+    costType: i.costType,
+    refundable: i.refundable,
+    certainty: i.certainty,
+    includesTaxes: i.includesTaxes,
+    consultedAt: i.consultedAt,
+    nights: lodging ? lodgingNights(lodging) : null,
+    paymentStatus: paid ? "paid" : "payment_pending",
+  };
+}
+
 /** Partidas de un escenario (alternativas seleccionadas + propias), con interruptores aplicados. */
 export function scenarioItems(data: LoadedTrip, scenarioId: string): CostItemInput[] {
   const selected = new Set(
@@ -72,32 +96,12 @@ export function scenarioItems(data: LoadedTrip, scenarioId: string): CostItemInp
   const off = new Set(
     data.toggles.filter((t) => t.scenarioId === scenarioId && !t.included).map((t) => t.costItemId),
   );
-  const lodgingNightsById = new Map(data.lodging.map((l) => [l.id, lodgingNights(l)]));
-  const paid = new Set(
-    data.bookings.filter((b) => b.paymentStatus === "paid").map((b) => `${b.ownerType}:${b.ownerId}`),
-  );
-
   return data.costItems
     .filter((i) =>
       i.ownerType === "scenario" ? i.ownerId === scenarioId : selected.has(`${i.ownerType}:${i.ownerId}`),
     )
     .filter((i) => !off.has(i.id))
-    .map((i) => ({
-      id: i.id,
-      label: i.label,
-      amountCents: i.amountCents,
-      currency: i.currency,
-      unit: i.unit,
-      quantity: i.quantity,
-      category: i.category,
-      costType: i.costType,
-      refundable: i.refundable,
-      certainty: i.certainty,
-      includesTaxes: i.includesTaxes,
-      consultedAt: i.consultedAt,
-      nights: i.ownerType === "lodging_option" ? (lodgingNightsById.get(i.ownerId) ?? null) : null,
-      paymentStatus: paid.has(`${i.ownerType}:${i.ownerId}`) ? "paid" : "payment_pending",
-    }));
+    .map((i) => toCostInput(data, i));
 }
 
 export function selectedOf(data: LoadedTrip, scenarioId: string) {
