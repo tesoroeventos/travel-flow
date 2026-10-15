@@ -52,3 +52,20 @@ describe("updateCostItem", () => {
     expect(untouched?.isDemo).toBe(true);
   });
 });
+
+describe("pares ida y vuelta", () => {
+  it("borrar la ida de un par ida y vuelta borra también la vuelta", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const seed = await seedBarilocheA(db, ctx);
+    const r = makeRepos(db);
+    const pairId = crypto.randomUUID();
+    const ida = await r.transport.create(ctx, { tripId: seed.tripId, leg: "outbound", mode: "own_car", fromLabel: "A", toLabel: "B", pairId });
+    const vta = await r.transport.create(ctx, { tripId: seed.tripId, leg: "return", mode: "own_car", fromLabel: "B", toLabel: "A", pairId });
+    await r.costItems.create(ctx, { tripId: seed.tripId, ownerType: "transport_option", ownerId: vta.id, label: "Peajes", amountCents: 100, currency: "ARS", category: "parking_tolls" });
+    await deleteOption(db, ctx, "transport_option", ida.id);
+    const ids = (await r.transport.list(ctx, seed.tripId)).map((t) => t.id);
+    expect(ids).not.toContain(vta.id);
+    expect((await r.costItems.list(ctx, seed.tripId)).some((i) => i.ownerId === vta.id)).toBe(false);
+  });
+});

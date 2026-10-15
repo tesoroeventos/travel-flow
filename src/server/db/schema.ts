@@ -181,6 +181,12 @@ export const transportOptions = pgTable("transport_options", {
   transferFromMin: integer("transfer_from_min"),
   advanceMin: integer("advance_min"),
   notes: text("notes"),
+  /** Une la ida y la vuelta de una oferta "ida y vuelta" (precio en la ida). */
+  pairId: uuid("pair_id"),
+  /** "En destino": si se suma a las propuestas. */
+  inProposals: boolean("in_proposals").notNull().default(true),
+  /** captura | link | auto | manual */
+  source: text("source"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -209,6 +215,7 @@ export const lodgingOptions = pgTable("lodging_options", {
   url: text("url"),
   qualityRating: integer("quality_rating"),
   notes: text("notes"),
+  source: text("source"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -230,6 +237,8 @@ export const activities = pgTable("activities", {
   distanceKm: doublePrecision("distance_km"),
   url: text("url"),
   notes: text("notes"),
+  inProposals: boolean("in_proposals").notNull().default(true),
+  source: text("source"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -385,3 +394,17 @@ export const tripEvents = pgTable("trip_events", {
   before: jsonb("before"),
   after: jsonb("after"),
 });
+
+/* ───────── Uso de IA ───────── */
+
+export const aiUsage = pgTable(
+  "ai_usage",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.day] })],
+);
