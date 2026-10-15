@@ -52,6 +52,18 @@ export default async function ItineraryPage({ params, searchParams }: PageProps<
         </nav>
       </div>
 
+      <div className="no-print flex flex-wrap gap-2">
+        <a href={`/viajes/${id}/exportar/itinerario.ics`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+          Agregar al calendario (.ics)
+        </a>
+        <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+          Descargar presupuesto (CSV)
+        </a>
+        <Link href={`/viajes/${id}/imprimir`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+          Imprimir o guardar PDF
+        </Link>
+      </div>
+
       {diff ? <ChangesBanner tripId={id} changed={uniq(diff.changed)} added={uniq(diff.added)} removedCount={diff.removed.length} /> : null}
 
       {itinerary.alerts.length > 0 ? (

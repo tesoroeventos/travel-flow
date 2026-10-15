@@ -109,6 +109,11 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
         <Disclosure label="Nuevo escenario" variant="primary" className="w-full sm:w-auto">
           <NewScenario tripId={id} suggested={String.fromCharCode(65 + data.scenarios.length)} />
         </Disclosure>
+        {a.scenarios.length > 0 ? (
+          <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-md px-4 font-semibold text-route hover:bg-route-soft">
+            Descargar presupuesto (CSV)
+          </a>
+        ) : null}
         <Disclosure label="Prioridades" className="w-full sm:w-auto">
           <SettingsForm
             tripId={id}
