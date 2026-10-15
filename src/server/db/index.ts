@@ -3,6 +3,7 @@ import path from "node:path";
 import { mkdirSync } from "node:fs";
 import { createDb, PGLITE_PREFIX, type Db } from "./client";
 import { inviteCodes } from "./schema";
+import { memoizeWithRetry } from "./memo";
 
 /** Si BOOTSTRAP_INVITE_CODE está definido, asegura que exista ese código de invitación (primer acceso y pruebas). */
 async function bootstrapInvite(db: Db): Promise<void> {
@@ -11,7 +12,7 @@ async function bootstrapInvite(db: Db): Promise<void> {
   await db.insert(inviteCodes).values({ code, maxUses: 1000, expiresAt: null }).onConflictDoNothing();
 }
 
-const globalForDb = globalThis as unknown as { __travelflowDb?: Promise<Db> };
+const globalForDb = globalThis as unknown as { __travelflowGetDb?: () => Promise<Db> };
 
 /** Con SEED_DEMO=true se siembra el viaje de demostración al iniciar (idempotente). */
 async function maybeSeedDemo(db: Db): Promise<void> {
@@ -40,8 +41,8 @@ async function init(): Promise<Db> {
   return db;
 }
 
-/** Conexión única por proceso. Con PGlite aplica las migraciones al iniciar. */
+/** Conexión única por proceso (reintenta si la inicialización falló). Con PGlite aplica las migraciones al iniciar. */
 export function getDb(): Promise<Db> {
-  globalForDb.__travelflowDb ??= init();
-  return globalForDb.__travelflowDb;
+  globalForDb.__travelflowGetDb ??= memoizeWithRetry(init);
+  return globalForDb.__travelflowGetDb();
 }
