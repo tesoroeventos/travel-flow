@@ -43,6 +43,27 @@ describe("escenarios", () => {
     expect(await r.costItems.get(ctx, seed.items.food.id)).toBeNull();
   });
 
+  it("el escenario de referencia tiene que ser del mismo viaje", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const seed = await seedBarilocheA(db, ctx);
+    const other = await makeRepos(db).trips.create(ctx, {
+      name: "Otro", originLabel: "A", destinationLabel: "B", startAt: new Date("2027-02-01T12:00:00Z"), startTz: "UTC",
+      endAt: new Date("2027-02-02T12:00:00Z"), endTz: "UTC", baseCurrency: "ARS", budgetCents: 1,
+    });
+    const foreign = await createScenario(db, ctx, other.id, "X");
+    const base = {
+      weights: { price: 5, travel_time: 3, transfers: 2, location: 2, flexibility: 1, comfort: 3, lodging_quality: 2, experience: 2 },
+      tieThresholdPct: "5",
+      contingencyPct: "10",
+      contingencyCategories: ["food"],
+    };
+    await expect(saveDecisionSettings(db, ctx, seed.tripId, { ...base, referenceScenarioId: foreign.id })).rejects.toThrow();
+    await expect(saveDecisionSettings(db, ctx, seed.tripId, { ...base, referenceScenarioId: "no-es-un-id" })).rejects.toThrow();
+    await saveDecisionSettings(db, ctx, seed.tripId, { ...base, referenceScenarioId: seed.scenarioId });
+    expect((await makeRepos(db).trips.get(ctx, seed.tripId))?.referenceScenarioId).toBe(seed.scenarioId);
+  });
+
   it("guarda pesos, umbral e imprevistos", async () => {
     const db = await createTestDb();
     const ctx = await makeCtx(db);

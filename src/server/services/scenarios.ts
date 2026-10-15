@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Criterion } from "@/domain/decision/types";
 import type { Db } from "../db/client";
 import { costItems } from "../db/schema";
-import type { Ctx } from "../context";
+import { NotFoundError, type Ctx } from "../context";
 import { makeRepos } from "../repos";
 import { makeScenarioParts } from "../repos/scenario-parts";
 
@@ -68,9 +68,15 @@ export interface DecisionSettings {
   referenceScenarioId: string | null;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function saveDecisionSettings(db: Db, ctx: Ctx, tripId: string, s: DecisionSettings): Promise<void> {
   const r = makeRepos(db);
   const parts = makeScenarioParts(db);
+  if (s.referenceScenarioId !== null) {
+    const ref = UUID_RE.test(s.referenceScenarioId) ? await r.scenarios.get(ctx, s.referenceScenarioId) : null;
+    if (!ref || ref.tripId !== tripId) throw new NotFoundError("el escenario", s.referenceScenarioId);
+  }
   await r.trips.update(ctx, tripId, {
     tieThresholdPct: s.tieThresholdPct,
     contingencyPct: s.contingencyPct,

@@ -77,7 +77,7 @@ const settingsSchema = z.object({
     }),
   contingencyCategories: z.array(z.enum(COST_CATEGORIES)).default([]),
   referenceScenarioId: z
-    .string()
+    .union([z.literal(""), z.uuid("Escenario inválido")])
     .optional()
     .transform((v) => (v ? v : null)),
 });
