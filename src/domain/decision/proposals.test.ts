@@ -104,4 +104,17 @@ describe("propuestas", () => {
       ),
     ).toEqual([]);
   });
+
+  it("la vuelta de un par 'ida y vuelta' sin horarios toma la duración de la ida", () => {
+    const ida = vuelo("a", "outbound", "10", "12", { pairId: "p" });
+    const vta = vuelo("b", "return", "17", "19", { pairId: "p", departUtc: null, arriveUtc: null });
+    const [c] = buildCombos(buildPlans([ida, vta]), [{ id: "h", comfort: 3 }], () => 100);
+    expect(c!.minutes).toBe(540);
+  });
+
+  it("si ninguna combinación tiene horarios, no se propone 'la más rápida'", () => {
+    const tags = pickProposals([combo("1", 100, null, 2), combo("2", 200, null, 5)]).flatMap((c) => c.tags);
+    expect(tags).not.toContain("rapida");
+    expect(tags).toEqual(["barata", "comoda"]);
+  });
 });

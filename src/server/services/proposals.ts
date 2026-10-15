@@ -236,7 +236,7 @@ export function proposalsFromLoaded(data: LoadedTrip, opts: { today?: string; sw
     } else if (tag === "rapida") {
       why =
         combo.minutes === null
-          ? "Es la que menos tiempo de viaje suma."
+          ? "Tiene el menor tiempo de viaje entre las opciones con horarios."
           : `${fmtMinutes(combo.minutes)} de viaje sumando ida y vuelta, con tiempos de terminal y aeropuerto.`;
       const cheap = byTag("barata");
       if (

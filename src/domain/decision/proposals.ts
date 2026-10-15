@@ -83,7 +83,9 @@ export function buildCombos(
     const legIds = legs.map((l) => l.id);
     let minutes: number | null = 0;
     for (const l of legs) {
-      const m = legMinutes(l);
+      // En un par "ida y vuelta" sin horarios de vuelta, se estima con la duración del otro tramo.
+      const partner = l.pairId ? legs.find((x) => x !== l && x.pairId === l.pairId) : undefined;
+      const m = legMinutes(l) ?? (partner ? legMinutes(partner) : null);
       minutes = m === null || minutes === null ? null : minutes + m;
     }
     const legComfort = legs.reduce((s, l) => s + comfortOf(l.comfort), 0) / legs.length;
@@ -110,11 +112,10 @@ export function pickProposals(combos: Combo[]): ProposalCard[] {
   if (!ok.length) return [];
   const cost = (c: Combo) => c.costCents as number;
   const first = (f: (a: Combo, b: Combo) => number) => ok.slice().sort(f)[0]!;
-  const winners: [ProposalTag, Combo][] = [
-    ["barata", first((a, b) => cost(a) - cost(b) || mins(a) - mins(b))],
-    ["rapida", first((a, b) => mins(a) - mins(b) || cost(a) - cost(b))],
-    ["comoda", first((a, b) => b.comfort - a.comfort || cost(a) - cost(b))],
-  ];
+  const winners: [ProposalTag, Combo][] = [["barata", first((a, b) => cost(a) - cost(b) || mins(a) - mins(b))]];
+  // Sin ningún horario no se puede saber cuál es la más rápida.
+  if (ok.some((c) => c.minutes !== null)) winners.push(["rapida", first((a, b) => mins(a) - mins(b) || cost(a) - cost(b))]);
+  winners.push(["comoda", first((a, b) => b.comfort - a.comfort || cost(a) - cost(b))]);
   const cards: ProposalCard[] = [];
   for (const [tag, c] of winners) {
     const existing = cards.find((x) => x.combo.key === c.key);
