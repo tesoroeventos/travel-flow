@@ -125,3 +125,40 @@ Registro de cada decisión que no estaba fijada en la spec o el plan, con lo que
 - Task 13: Ruling: una actividad sin precio bloquea las propuestas ("el precio de …") igual que cualquier opción; para algo gratis se carga precio 0 — costo: un paso más para lo gratuito.
 - Task 13: Ruling: se agrega .prettierrc.json con printWidth 120 (el estilo del proyecto); los archivos nuevos de tareas 1–12 quedaron a 80 y se reformatean en la Task 14.
 - Task 13: Ruling: E2E usan getByLabel(..., { exact: true }) para "Ida", "Vuelta", "Destino" (coinciden por subcadena con "salida" y las zonas horarias).
+
+### Revisión final del ciclo 2
+
+Revisor independiente (modelo Opus). Corregido, cada punto con su prueba que falló primero:
+
+- SSRF por IPv6 con IPv4 embebida — 'bloquea IPv6 que esconde una IPv4…' + 'bloquea un link a la IP de metadatos escrita como IPv6' RED→GREEN
+- htmlToText (RangeError en entidades y regex cuadráticas: 47 s con página hostil) — 'no se rompe con entidades…' + 'procesa en tiempo lineal…' RED→GREEN
+- guard de producción solo en migrate — 'en producción getAI se niega a usar la simulada…' RED→GREEN
+- una opción incompleta bloqueaba todo (contra spec §4) — 'una opción sin precio no bloquea…' + 'un alojamiento en USD sin dólar no bloquea…' RED→GREEN
+- viaje en dólares sin salida para cargar el dólar — 'viaje en dólares con ofertas en pesos pide el dólar…' RED→GREEN
+- ida y vuelta nunca podía ser la más rápida y texto falso sin horarios — 'la vuelta de un par … toma la duración de la ida' + 'si ninguna combinación tiene horarios…' RED→GREEN
+- edición de ida y vuelta aplicada a medias — 'editar una oferta ida y vuelta aplica … también a la vuelta' RED→GREEN (y 'precio faltante…' ajustada al comportamiento no bloqueante)
+- escrituras de varios pasos sin transacción — 'si una oferta de la tanda falla…' + 'si cambiar el tipo de una opción falla…' RED→GREEN; saveCarOffer y chooseProposal envueltos con el mismo mecanismo (cubiertos por la suite)
+- límite de 1 MB de Next para acciones (spec pide 8 MB; re-graduado de Minor a Important: subida fallaba con 'Se cortó la conexión' en bucle) — 'las acciones aceptan capturas de hasta 8 MB' RED→GREEN
+
+Nota: los rulings de Task 7 y Task 13 que hacían que una opción sin precio bloqueara todas las propuestas quedan reemplazados: ahora compiten las combinaciones completas y lo incompleto se avisa sin bloquear (spec §4).
+
+Decisiones sobre lo que el revisor dejó de lado:
+
+- fidelidad visual y modo oscuro no revisados por el revisor — se aceptan con las E2E a 390 px en claro/oscuro y la revisión en vivo de Matias — costo si está mal: retoques visuales después.
+- calidad de lectura con respuestas reales de Claude — queda para la prueba manual de Matias en Railway, como dice el spec — costo: algún campo mal leído hasta ajustar las instrucciones.
+- modelos y costos de DEPLOY.md — verificados contra la página oficial de modelos (Sonnet 5.5 US$2/US$10 por MTok) — costo: ninguno.
+- un ">>>" en el texto de una página no escapa de las instrucciones — la salida se valida con Zod y solo afecta el viaje del propio usuario — costo: una oferta rara que el usuario borra.
+- páginas que no son UTF-8 se leen como UTF-8 — el texto sale con caracteres raros, la IA puede no encontrar ofertas y la app pide una captura — costo: un paso más en esos sitios.
+- formato Prettier en archivos viejos y contenido de package-lock/drizzle meta — preexistente o generado, fuera del alcance — costo: ninguno.
+
+Pendientes menores (no se corrigieron):
+
+- editar opciones viejas con modos ferry/taxi/etc. las mueve a "En destino"; Buquebus/ferry no tiene tipo propio.
+- "Datos del viaje" en viajes creados con el asistente viejo borra niños/bebés/paradas y pisa nombre, homeLabel y habitaciones.
+- AI_DAILY_LIMIT vacío = 0 y no numérico = sin límite; el cupo se renueva a las 21:00 de Argentina (día UTC).
+- leer links no consume cupo, así que no tiene límite propio de frecuencia.
+- precios leídos por la IA sin tope superior (la edición sí tiene tope).
+- más de 10 capturas se descartan sin aviso; etiqueta "US$" cuando falta el total; algunos campos dudosos (empresa, origen/destino, puntaje, confort, noches) no se muestran como "Revisá"; elegir en "Cambiar algo" una combinación incompleta se ignora sin aviso.
+- no hay pruebas unitarias de los chequeos de pertenencia de las acciones (el revisor confirmó que el código es correcto).
+
+Estado final: npm test 337/337, lint OK, typecheck OK, build OK, test:e2e 27/27
