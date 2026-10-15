@@ -36,6 +36,8 @@ export default defineConfig({
       DATABASE_URL: "pglite://./.data/e2e",
       AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret-e2e",
       BOOTSTRAP_INVITE_CODE: E2E_INVITE,
+      SEED_DEMO: "true",
+      DEMO_SHARE_TOKEN: "demo-e2e",
       APP_URL: `http://localhost:${PORT}`,
     },
   },

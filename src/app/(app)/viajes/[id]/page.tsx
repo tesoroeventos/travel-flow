@@ -6,6 +6,8 @@ import { fmtMoney } from "@/ui/format";
 import { LinkButton } from "@/ui/Button";
 import { ConfirmButton } from "@/ui/ConfirmButton";
 import { PREF_VALUE_LABELS } from "@/ui/labels";
+import { createShareLinkAction, duplicateTripAction, revokeShareLinkAction } from "@/server/actions/share";
+import { CopyLink } from "@/ui/CopyLink";
 
 export const metadata = { title: "Resumen del viaje · TravelFlow" };
 
@@ -147,7 +149,28 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         </div>
       </section>
 
-      <section className="pt-2">
+      <section className="rounded-lg border border-line bg-surface p-4">
+        <h2 className="font-display text-xl font-semibold">Compartir</h2>
+        {trip.publicShareToken ? (
+          <>
+            <p className="mt-1 text-sm text-ink-soft">Cualquiera con el enlace puede ver el viaje, sin editarlo.</p>
+            <CopyLink path={`/share/${trip.publicShareToken}`} />
+            <form action={revokeShareLinkAction.bind(null, id)} className="mt-2">
+              <button className="min-h-11 font-semibold text-alert">Dejar de compartir</button>
+            </form>
+          </>
+        ) : (
+          <form action={createShareLinkAction.bind(null, id)} className="mt-2">
+            <p className="text-sm text-ink-soft">Creá un enlace de solo lectura para mostrar escenarios e itinerario.</p>
+            <button className="mt-2 min-h-11 rounded-md border border-line-strong px-4 font-semibold hover:border-route">Crear enlace para compartir</button>
+          </form>
+        )}
+      </section>
+
+      <section className="flex flex-wrap gap-2 pt-2">
+        <form action={duplicateTripAction.bind(null, id)}>
+          <button className="min-h-11 rounded-md border border-line-strong px-4 font-semibold hover:border-route">Duplicar viaje</button>
+        </form>
         <ConfirmButton action={deleteTripAction.bind(null, id)} label="Borrar viaje" confirm="¿Borrar este viaje y todo lo cargado? No se puede deshacer." />
       </section>
     </main>

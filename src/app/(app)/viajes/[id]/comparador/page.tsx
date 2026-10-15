@@ -5,12 +5,12 @@ import { LEG_LABELS, MODE_LABELS } from "@/server/validation/options";
 import type { RatingCriterion } from "@/domain/decision/types";
 import { Disclosure } from "@/ui/Disclosure";
 import { EmptyState } from "@/ui/Feedback";
-import { fmtMoney } from "@/ui/format";
 import { ScenarioBuilder, type BuilderOption } from "@/ui/comparator/ScenarioBuilder";
 import { SettingsForm } from "@/ui/comparator/SettingsForm";
 import { NewScenario } from "@/ui/comparator/NewScenario";
 import { ScenarioStack } from "@/ui/comparator/ScenarioStack";
-import { groupTotals, uniqueWarnings } from "@/ui/comparator/groups";
+import { groupTotals } from "@/ui/comparator/groups";
+import { ScenarioTable } from "@/ui/comparator/ScenarioTable";
 
 export const metadata = { title: "Comparador · TravelFlow" };
 
@@ -31,69 +31,6 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
     })),
     ...data.lodging.map((l) => ({ ownerType: "lodging_option" as const, id: l.id, label: l.name, group: "Alojamiento" })),
     ...data.activities.map((x) => ({ ownerType: "activity" as const, id: x.id, label: x.name, group: "Actividades" })),
-  ];
-
-  const savingsById = new Map(a.comparison.rows.map((r) => [r.scenarioId, r]));
-  const scoreById = new Map(a.score.scores.map((s) => [s.scenarioId, s.score]));
-  const ref = a.scenarios.find((s) => s.id === a.comparison.referenceId);
-
-  type Row = { label: string; cell: (s: (typeof a.scenarios)[number]) => React.ReactNode; strong?: boolean };
-  const money = (c: number | null) => fmtMoney(c, base);
-  const rows: Row[] = [
-    { label: "Subtotal", cell: (s) => money(s.summary.totalCents) },
-    { label: "Imprevistos", cell: (s) => money(s.summary.contingencyCents) },
-    { label: "Total con imprevistos", cell: (s) => money(s.summary.totalWithContingencyCents), strong: true },
-    { label: "Por persona", cell: (s) => money(s.summary.perPersonCents) },
-    { label: "Por día y persona", cell: (s) => money(s.summary.perPersonPerDayCents) },
-    {
-      label: "Contra el presupuesto",
-      cell: (s) => (
-        <span className={s.summary.deviationCents > 0 ? "font-semibold text-alert" : "text-ok"}>
-          {s.summary.deviationCents > 0 ? `Excede ${money(s.summary.deviationCents)}` : `Sobran ${money(-s.summary.deviationCents)}`}
-        </span>
-      ),
-    },
-    {
-      label: ref ? `Ahorro frente a ${ref.name}` : "Ahorro",
-      cell: (s) => {
-        const r = savingsById.get(s.id);
-        if (!r || s.id === a.comparison.referenceId) return "Referencia";
-        return `${money(r.savingCents)}${r.savingPct !== null ? ` (${r.savingPct.replace(".", ",")} %)` : ""}`;
-      },
-    },
-    { label: "Confirmado", cell: (s) => money(s.summary.confirmedCents) },
-    { label: "Estimado", cell: (s) => money(s.summary.estimatedCents) },
-    { label: "Pagado", cell: (s) => money(s.summary.paidCents) },
-    { label: "Pendiente de pago", cell: (s) => money(s.summary.pendingCents) },
-    { label: "Fijo", cell: (s) => money(s.summary.byCostType.fixed) },
-    { label: "Variable", cell: (s) => money(s.summary.byCostType.variable) },
-    { label: "Opcional", cell: (s) => money(s.summary.byCostType.optional) },
-    { label: "Retenido en depósitos", cell: (s) => money(s.summary.refundableHeldCents) },
-    ...(a.scenarios[0] ? groupTotals(a.scenarios[0].summary) : []).map((g, gi) => ({
-      label: g.label,
-      cell: (s: (typeof a.scenarios)[number]) => money(groupTotals(s.summary)[gi]!.cents),
-    })),
-    {
-      label: "Puntaje",
-      cell: (s) => (a.score.recommendedId || a.scenarios.length > 1 ? `${Math.round((scoreById.get(s.id) ?? 0) * 100)} / 100` : "—"),
-    },
-    {
-      label: "Avisos",
-      cell: (s) => {
-        const ws = uniqueWarnings(s.summary.warnings, labelOf, base);
-        return ws.length === 0 ? (
-          <span className="text-ink-soft">Sin avisos</span>
-        ) : (
-          <ul className="space-y-1 text-left">
-            {ws.map((w) => (
-              <li key={w} className="text-sm">
-                {w}
-              </li>
-            ))}
-          </ul>
-        );
-      },
-    },
   ];
 
   return (
@@ -147,38 +84,7 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
             </section>
           ) : null}
 
-          <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-            <table aria-label="Comparación de escenarios" className="num w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className="sticky left-0 w-32 bg-surface px-3 py-2 text-left font-medium text-ink-soft">
-                    <span className="sr-only">Concepto</span>
-                  </th>
-                  {a.scenarios.map((s) => (
-                    <th key={s.id} scope="col" className="px-3 py-2 text-right font-display text-lg font-semibold">
-                      {s.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.label} className="border-b border-line last:border-0">
-                    <th scope="row" className="sticky left-0 w-32 min-w-32 bg-surface px-3 py-2 text-left font-normal leading-snug text-ink-soft">
-                      {r.label}
-                    </th>
-                    {a.scenarios.map((s) => (
-                      <td key={s.id} className={`min-w-36 max-w-56 whitespace-normal px-3 py-2 text-right align-top ${r.strong ? "font-semibold" : ""}`}>
-                        {r.cell(s)}
-                        {r.strong && s.summary.incomplete ? <div className="text-xs font-normal text-alert">Incompleto: falta tipo de cambio</div> : null}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
+          <ScenarioTable a={a} base={base} labelOf={labelOf} />
           <ScenarioStack
             budgetCents={trip.budgetCents}
             currency={base}

@@ -13,6 +13,13 @@ async function bootstrapInvite(db: Db): Promise<void> {
 
 const globalForDb = globalThis as unknown as { __travelflowDb?: Promise<Db> };
 
+/** Con SEED_DEMO=true se siembra el viaje de demostración al iniciar (idempotente). */
+async function maybeSeedDemo(db: Db): Promise<void> {
+  if (process.env.SEED_DEMO !== "true") return;
+  const { seedDemo } = await import("../services/demo");
+  await seedDemo(db, { shareToken: process.env.DEMO_SHARE_TOKEN || undefined });
+}
+
 async function init(): Promise<Db> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("Falta la variable DATABASE_URL");
@@ -24,10 +31,12 @@ async function init(): Promise<Db> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await migrate(db as any, { migrationsFolder: path.join(process.cwd(), "drizzle") });
     await bootstrapInvite(db);
+    await maybeSeedDemo(db);
     return db;
   }
   const db = createDb(url);
   await bootstrapInvite(db);
+  await maybeSeedDemo(db);
   return db;
 }
 
