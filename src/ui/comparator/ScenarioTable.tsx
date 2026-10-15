@@ -68,7 +68,7 @@ export function ScenarioTable({ a, base, labelOf }: { a: TripAnalysis; base: str
   ];
 
   return (
-          <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <div className="overflow-x-auto rounded-2xl bg-surface shadow-card">
             <table aria-label="Comparación de escenarios" className="num w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line">

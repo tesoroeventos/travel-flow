@@ -30,7 +30,7 @@ export default async function ExpensesPage({ params }: PageProps<"/viajes/[id]/g
       <h2 className="font-display text-3xl font-semibold">Gastos</h2>
 
       <section aria-label="Resumen de gastos" className="space-y-3">
-        <dl className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-4 md:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-surface shadow-card p-4 md:grid-cols-4">
           <div>
             <dt className="text-sm text-ink-soft">Presupuesto inicial</dt>
             <dd className="num font-display text-2xl font-semibold">{fmtMoney(rep.budgetCents, base)}</dd>
@@ -55,7 +55,7 @@ export default async function ExpensesPage({ params }: PageProps<"/viajes/[id]/g
         ) : null}
 
         {rows.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <div className="overflow-x-auto rounded-2xl bg-surface shadow-card">
             <table aria-label="Desvío por categoría" className="num w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-ink-soft">
@@ -103,7 +103,7 @@ export default async function ExpensesPage({ params }: PageProps<"/viajes/[id]/g
       {expenses.length === 0 ? (
         <EmptyState title="Sin gastos registrados">Durante el viaje, cargá cada gasto en la moneda en que lo pagaste. Se convierte con el tipo de cambio vigente a esa fecha.</EmptyState>
       ) : (
-        <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
+        <ul className="divide-y divide-line rounded-2xl bg-surface shadow-card">
           {expenses.map((x) => (
             <li key={x.id} className="p-3">
               <div className="flex items-start justify-between gap-3">

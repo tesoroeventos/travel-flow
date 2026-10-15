@@ -101,9 +101,9 @@ export default async function LodgingPage({ params, searchParams }: PageProps<"/
             {want ? <input type="hidden" name="servicio" value={want} /> : null}
             <label className="text-sm">
               Capacidad mínima
-              <input name="capacidad" type="number" min={0} defaultValue={minCap || ""} className="ml-2 w-20 rounded-md border border-line bg-surface px-2 py-1.5" />
+              <input name="capacidad" type="number" min={0} defaultValue={minCap || ""} className="ml-2 w-20 rounded-xl border border-line bg-surface px-2 py-1.5" />
             </label>
-            <button className="min-h-9 rounded-md border border-line px-3 text-sm">Filtrar</button>
+            <button className="min-h-9 rounded-xl border border-line px-3 text-sm">Filtrar</button>
           </form>
         </div>
       ) : null}
@@ -115,7 +115,7 @@ export default async function LodgingPage({ params, searchParams }: PageProps<"/
       ) : (
         <div className="space-y-3">
           {rows.map(({ l, cost, nights, perNight }) => (
-            <article key={l.id} className="rounded-lg border border-line bg-surface p-4">
+            <article key={l.id} className="rounded-2xl bg-surface shadow-card p-4">
               <header className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm text-ink-soft">{LODGING_KIND_LABELS[l.kind]}</p>

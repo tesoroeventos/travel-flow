@@ -17,7 +17,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   return (
     <button
       type="button"
-      className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-ink-soft hover:text-ink ${className}`}
+      className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-ink-soft hover:text-ink ${className}`}
       onClick={() => {
         document.documentElement.dataset.theme = next;
         try {

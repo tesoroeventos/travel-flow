@@ -62,7 +62,7 @@ export function LodgingForm({
   const otz = option?.tz ?? tz;
 
   return (
-    <form action={action} aria-label={option ? `Editar ${option.name}` : "Nueva alternativa de alojamiento"} className="space-y-4 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label={option ? `Editar ${option.name}` : "Nueva alternativa de alojamiento"} className="space-y-4 rounded-2xl bg-surface shadow-card p-4">
 
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <Field label="Nombre" name="name" required defaultValue={v("name", option?.name)} error={e.name} />
@@ -90,7 +90,7 @@ export function LodgingForm({
         </div>
       </fieldset>
 
-      <details className="rounded-md border border-line p-3">
+      <details className="rounded-xl border border-line p-3">
         <summary className="cursor-pointer font-medium">Más detalles</summary>
         <div className="mt-3 space-y-3">
           <div className="grid grid-cols-3 gap-2">

@@ -44,7 +44,7 @@ export default async function SharedTripPage({ params }: PageProps<"/share/[toke
           {plural(a.travelerCount, "viajero", "viajeros")}
         </p>
 
-        <form action={duplicateSharedAction.bind(null, token)} className="mt-6 rounded-lg border border-route/40 bg-route-soft p-4">
+        <form action={duplicateSharedAction.bind(null, token)} className="mt-6 rounded-2xl border border-route/40 bg-route-soft p-4">
           <p className="font-semibold">¿Querés usarlo como punto de partida?</p>
           <p className="mt-1 text-sm">Se copia a tu cuenta con todos los escenarios. Los precios de demostración siguen marcados hasta que los edites.</p>
           <SubmitButton className="mt-3" pendingText="Copiando…">
@@ -53,7 +53,7 @@ export default async function SharedTripPage({ params }: PageProps<"/share/[toke
         </form>
 
         {a.scenarios.length > 1 && a.explanation.length > 0 ? (
-          <section aria-label="Recomendación" className="mt-8 rounded-lg border-2 border-route bg-surface p-4">
+          <section aria-label="Recomendación" className="mt-8 rounded-2xl border-2 border-route bg-surface p-4">
             <h2 className="font-display text-xl font-semibold">Recomendación</h2>
             <ul className="mt-2 space-y-1">
               {a.explanation.map((l) => (

@@ -35,7 +35,7 @@ export function SettingsForm({
   const e = state.fieldErrors ?? {};
   const pct = (s: string) => String(Number(s));
   return (
-    <form action={action} aria-label="Prioridades y supuestos" className="space-y-4 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label="Prioridades y supuestos" className="space-y-4 rounded-2xl bg-surface shadow-card p-4">
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <fieldset>
         <legend className="font-semibold">¿Cuánto pesa cada criterio? (0 a 10)</legend>

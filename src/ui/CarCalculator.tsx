@@ -17,7 +17,7 @@ export function CarCalculator({ tripId, optionId, rental }: { tripId: string; op
   const e = state.fieldErrors ?? {};
   const v = (k: string) => state.values?.[k];
   return (
-    <form action={action} aria-label="Calculadora de auto" className="mt-2 space-y-3 rounded-md border border-line bg-surface-2 p-3">
+    <form action={action} aria-label="Calculadora de auto" className="mt-2 space-y-3 rounded-xl border border-line bg-surface-2 p-3">
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <p className="text-sm text-ink-soft">Cada concepto se guarda como una partida con sus supuestos a la vista.</p>
       <div className="grid grid-cols-2 gap-2">

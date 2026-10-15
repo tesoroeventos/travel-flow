@@ -36,7 +36,7 @@ export function ActivityForm({ tripId, option, defaultDate, baseCurrency }: { tr
   const n = (x: number | null | undefined) => (x === null || x === undefined ? undefined : String(x));
   const e = state.fieldErrors ?? {};
   return (
-    <form action={action} aria-label={option ? `Editar ${option.name}` : "Nueva actividad"} className="space-y-4 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label={option ? `Editar ${option.name}` : "Nueva actividad"} className="space-y-4 rounded-2xl bg-surface shadow-card p-4">
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <Field label="Nombre" name="name" required defaultValue={v("name", option?.name)} error={e.name} />
       <Field label="Dirección" name="address" defaultValue={v("address", option?.address)} />
@@ -48,7 +48,7 @@ export function ActivityForm({ tripId, option, defaultDate, baseCurrency }: { tr
       <CheckField label="Horario fijo (no se reordena)" name="fixedTime" defaultChecked={option?.fixedTime} />
       <CheckField label="Requiere reserva" name="requiresBooking" defaultChecked={option?.requiresBooking} />
       {!option ? <QuickPrice baseCurrency={baseCurrency} defaultUnit="per_person" error={e.price} /> : null}
-      <details className="rounded-md border border-line p-3">
+      <details className="rounded-xl border border-line p-3">
         <summary className="cursor-pointer font-medium">Más detalles</summary>
         <div className="mt-3 space-y-3">
           <div className="grid grid-cols-2 gap-3">

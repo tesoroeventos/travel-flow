@@ -16,7 +16,7 @@ export function ScenarioStack({ rows, budgetCents, currency }: { rows: StackRow[
   const budgetPct = (budgetCents / max) * 100;
   const legend = rows[0]?.groups ?? [];
   return (
-    <figure className="rounded-lg border border-line bg-surface p-4">
+    <figure className="rounded-2xl bg-surface shadow-card p-4">
       <figcaption className="font-display text-xl font-semibold">Cómo se reparte el costo</figcaption>
       <p className="text-sm text-ink-soft">Total con imprevistos por escenario. La línea marca el presupuesto.</p>
       <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Referencias">

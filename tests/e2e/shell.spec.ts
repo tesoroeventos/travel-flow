@@ -7,16 +7,20 @@ test("sin sesión redirige al ingreso", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Ingresar" })).toBeVisible();
 });
 
-test("registro con invitación lleva al dashboard", async ({ page }) => {
+test("registro con invitación lleva al inicio con el estilo nuevo", async ({ page }) => {
   await registerUser(page);
-  await expect(page.getByRole("heading", { name: "Viajes activos" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Próximos viajes" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Crear viaje" }).first()).toBeVisible();
+  const h1 = page.getByRole("heading", { name: "Tus viajes" });
+  await expect(h1).toBeVisible();
+  await expect(page.getByRole("link", { name: "Viaje nuevo" }).first()).toBeVisible();
+  expect(await h1.evaluate((el) => getComputedStyle(el).fontFamily)).toContain("Bricolage Grotesque");
+  expect(await page.locator("body").evaluate((el) => getComputedStyle(el).fontFamily)).toContain("Figtree");
 
   const nav = page.getByRole("navigation", { name: "Principal" });
-  for (const item of ["Inicio", "Mis viajes", "Crear viaje", "Configuración"]) {
+  for (const item of ["Inicio", "Mis viajes", "Viaje nuevo", "Configuración"]) {
     await expect(nav.getByRole("link", { name: item })).toBeVisible();
   }
+  await expectNoHorizontalScroll(page);
+  await page.getByRole("button", { name: /Modo (claro|oscuro)/ }).click();
   await expectNoHorizontalScroll(page);
 });
 

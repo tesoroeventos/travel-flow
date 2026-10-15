@@ -39,7 +39,7 @@ export default async function ActivitiesPage({ params }: PageProps<"/viajes/[id]
             {list.map((a) => {
               const cost = optionCost(data, "activity", a.id);
               return (
-                <article key={a.id} className="rounded-lg border border-line bg-surface p-4">
+                <article key={a.id} className="rounded-2xl bg-surface shadow-card p-4">
                   <header className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h4 className="font-display text-xl font-semibold leading-tight">{a.name}</h4>

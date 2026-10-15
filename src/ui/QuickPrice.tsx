@@ -7,7 +7,7 @@ import { CURRENCY_OPTIONS } from "./options";
 /** Precio principal al crear una alternativa (se guarda como su primera partida). */
 export function QuickPrice({ baseCurrency, defaultUnit, error }: { baseCurrency: string; defaultUnit: CostUnit; error?: string }) {
   return (
-    <div className="rounded-md border border-line p-3">
+    <div className="rounded-xl border border-line p-3">
       <div className="grid grid-cols-[1fr_6.5rem] gap-2">
         <Field label="Precio" name="price" inputMode="decimal" placeholder="Opcional" error={error} />
         <SelectField label="Moneda" name="priceCurrency" options={CURRENCY_OPTIONS} defaultValue={baseCurrency} />

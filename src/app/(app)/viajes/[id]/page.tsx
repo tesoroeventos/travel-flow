@@ -68,7 +68,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
   return (
     <main className="space-y-4 px-4 py-6 md:px-0">
       {!hasOptions ? (
-        <section className="rounded-lg border border-route/40 bg-route-soft p-4">
+        <section className="rounded-2xl border border-route/40 bg-route-soft p-4">
           <h2 className="font-display text-xl font-semibold">Siguiente paso: cargá alternativas</h2>
           <p className="mt-1">Sumá opciones de transporte y alojamiento con sus costos. Después las combinás en escenarios para compararlas.</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -80,7 +80,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rounded-2xl bg-surface shadow-card p-4">
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-display text-xl font-semibold">Ficha del viaje</h2>
           <Link href={`/viajes/${id}/editar`} className="min-h-11 font-semibold text-route underline">
@@ -115,7 +115,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         </dl>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Viajeros</h2>
         <ul className="mt-2 divide-y divide-line">
           {travelers.map((t) => (
@@ -126,7 +126,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
                   name="name"
                   defaultValue={t.name}
                   aria-label={`Nombre de ${t.name}`}
-                  className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-2 hover:border-line focus:border-route"
+                  className="min-w-0 flex-1 rounded-xl border border-transparent bg-transparent px-2 py-2 hover:border-line focus:border-route"
                 />
                 <button type="submit" className="min-h-11 px-2 text-sm font-semibold text-route">
                   Guardar
@@ -138,7 +138,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         <p className="mt-2 text-sm text-ink-soft">Para cambiar la cantidad de viajeros, editá los datos del viaje.</p>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Preferencias</h2>
         <div className="mt-2">
           <Facts obj={trip.preferences} />
@@ -149,7 +149,7 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         </div>
       </section>
 
-      <section className="rounded-lg border border-line bg-surface p-4">
+      <section className="rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Compartir</h2>
         {trip.publicShareToken ? (
           <>
@@ -162,14 +162,14 @@ export default async function TripSummaryPage({ params }: PageProps<"/viajes/[id
         ) : (
           <form action={createShareLinkAction.bind(null, id)} className="mt-2">
             <p className="text-sm text-ink-soft">Creá un enlace de solo lectura para mostrar escenarios e itinerario.</p>
-            <button className="mt-2 min-h-11 rounded-md border border-line-strong px-4 font-semibold hover:border-route">Crear enlace para compartir</button>
+            <button className="mt-2 min-h-11 rounded-xl border border-line-strong px-4 font-semibold hover:border-route">Crear enlace para compartir</button>
           </form>
         )}
       </section>
 
       <section className="flex flex-wrap gap-2 pt-2">
         <form action={duplicateTripAction.bind(null, id)}>
-          <button className="min-h-11 rounded-md border border-line-strong px-4 font-semibold hover:border-route">Duplicar viaje</button>
+          <button className="min-h-11 rounded-xl border border-line-strong px-4 font-semibold hover:border-route">Duplicar viaje</button>
         </form>
         <ConfirmButton action={deleteTripAction.bind(null, id)} label="Borrar viaje" confirm="¿Borrar este viaje y todo lo cargado? No se puede deshacer." />
       </section>

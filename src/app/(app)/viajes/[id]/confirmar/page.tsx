@@ -60,7 +60,7 @@ export default async function ConfirmPage({ params }: PageProps<"/viajes/[id]/co
       {chosen ? (
         <section aria-label="Resumen final" className="space-y-4">
           <h3 className="font-display text-2xl font-semibold">Resumen final</h3>
-          <dl className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-4 md:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-surface shadow-card p-4 md:grid-cols-4">
             <div>
               <dt className="text-sm text-ink-soft">Presupuesto definitivo</dt>
               <dd className="num font-display text-2xl font-semibold">{fmtMoney(chosen.summary.totalWithContingencyCents, base)}</dd>
@@ -87,7 +87,7 @@ export default async function ConfirmPage({ params }: PageProps<"/viajes/[id]/co
               const booking = data.bookings.find((b) => b.ownerType === e.ownerType && b.ownerId === e.id);
               const cost = optionCost(data, e.ownerType, e.id);
               return (
-                <li key={e.id} className="rounded-lg border border-line bg-surface p-4">
+                <li key={e.id} className="rounded-2xl bg-surface shadow-card p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm text-ink-soft">{e.group}</p>

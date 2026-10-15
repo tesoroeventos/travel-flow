@@ -38,7 +38,7 @@ export default async function ItineraryPage({ params, searchParams }: PageProps<
     <main className="space-y-6 px-4 py-6 md:px-0">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="font-display text-3xl font-semibold">Itinerario</h2>
-        <nav aria-label="Vista" className="flex gap-1 rounded-md border border-line bg-surface p-1">
+        <nav aria-label="Vista" className="flex gap-1 rounded-xl border border-line bg-surface p-1">
           {(
             [
               ["chrono", "Cronológica", "?"],
@@ -53,13 +53,13 @@ export default async function ItineraryPage({ params, searchParams }: PageProps<
       </div>
 
       <div className="no-print flex flex-wrap gap-2">
-        <a href={`/viajes/${id}/exportar/itinerario.ics`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+        <a href={`/viajes/${id}/exportar/itinerario.ics`} className="inline-flex min-h-11 items-center rounded-xl border border-line-strong bg-surface px-4 font-semibold hover:border-route">
           Agregar al calendario (.ics)
         </a>
-        <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+        <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-xl border border-line-strong bg-surface px-4 font-semibold hover:border-route">
           Descargar presupuesto (CSV)
         </a>
-        <Link href={`/viajes/${id}/imprimir`} className="inline-flex min-h-11 items-center rounded-md border border-line-strong bg-surface px-4 font-semibold hover:border-route">
+        <Link href={`/viajes/${id}/imprimir`} className="inline-flex min-h-11 items-center rounded-xl border border-line-strong bg-surface px-4 font-semibold hover:border-route">
           Imprimir o guardar PDF
         </Link>
       </div>
@@ -67,7 +67,7 @@ export default async function ItineraryPage({ params, searchParams }: PageProps<
       {diff ? <ChangesBanner tripId={id} changed={uniq(diff.changed)} added={uniq(diff.added)} removedCount={diff.removed.length} /> : null}
 
       {itinerary.alerts.length > 0 ? (
-        <p className="rounded-md border border-signal/50 bg-signal-soft px-3 py-2 text-sm">
+        <p className="rounded-xl border border-signal/50 bg-signal-soft px-3 py-2 text-sm">
           Hay {itinerary.alerts.length === 1 ? "1 alerta" : `${itinerary.alerts.length} alertas`} en el itinerario: revisá las marcas en amarillo.
         </p>
       ) : null}

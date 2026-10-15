@@ -92,7 +92,7 @@ export function ScenarioBuilder(p: BuilderProps) {
   const [, start] = useTransition();
   const groups = [...new Set(p.options.map((o) => o.group))];
   return (
-    <section aria-label={`Escenario ${p.scenario.name}`} className="rounded-lg border border-line bg-surface p-4">
+    <section aria-label={`Escenario ${p.scenario.name}`} className="rounded-2xl bg-surface shadow-card p-4">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-display text-xl font-semibold leading-tight">{p.scenario.name}</h3>
@@ -153,7 +153,7 @@ export function ScenarioBuilder(p: BuilderProps) {
                 <label key={c} className="text-sm">
                   {RATING_LABELS[c]}
                   <select
-                    className="mt-1 w-full rounded-md border border-line bg-surface px-2 py-2"
+                    className="mt-1 w-full rounded-xl border border-line bg-surface px-2 py-2"
                     defaultValue={p.ratings[c] ?? ""}
                     onChange={(e) => start(() => setRatingAction(p.tripId, p.scenario.id, c, e.target.value ? Number(e.target.value) : null))}
                   >
@@ -172,9 +172,9 @@ export function ScenarioBuilder(p: BuilderProps) {
           <form action={renameScenarioAction.bind(null, p.tripId, p.scenario.id)} className="flex items-end gap-2">
             <label className="flex-1 text-sm">
               Nombre
-              <input name="name" defaultValue={p.scenario.name} className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2" />
+              <input name="name" defaultValue={p.scenario.name} className="mt-1 w-full rounded-xl border border-line bg-surface px-3 py-2" />
             </label>
-            <button className="min-h-11 rounded-md border border-line px-3 font-semibold">Renombrar</button>
+            <button className="min-h-11 rounded-xl border border-line px-3 font-semibold">Renombrar</button>
           </form>
 
           <div className="flex flex-wrap gap-2">

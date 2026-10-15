@@ -41,7 +41,7 @@ function Radios<T extends string>({ name, legend, values, labels, value }: { nam
       <legend className="mb-1 text-sm font-medium">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {values.map((v) => (
-          <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-line bg-surface px-3 has-[:checked]:border-route has-[:checked]:bg-route-soft">
+          <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-3 has-[:checked]:border-route has-[:checked]:bg-route-soft">
             <input type="radio" name={name} value={v} defaultChecked={value ? value === v : undefined} className="accent-route" />
             {labels[v]}
           </label>
@@ -148,7 +148,7 @@ export function TripWizard({
                   aria-label={`Parada ${i + 1}`}
                   value={s}
                   onChange={(ev) => setStops((all) => all.map((x, j) => (j === i ? ev.target.value : x)))}
-                  className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2.5"
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-3 py-2.5"
                 />
                 <Button type="button" variant="ghost" aria-label={`Subir parada ${i + 1}`} disabled={i === 0} onClick={() => setStops((all) => { const c = [...all]; [c[i - 1], c[i]] = [c[i]!, c[i - 1]!]; return c; })}>
                   ↑

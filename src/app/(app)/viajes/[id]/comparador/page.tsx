@@ -47,7 +47,7 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
           <NewScenario tripId={id} suggested={String.fromCharCode(65 + data.scenarios.length)} />
         </Disclosure>
         {a.scenarios.length > 0 ? (
-          <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-md px-4 font-semibold text-route hover:bg-route-soft">
+          <a href={`/viajes/${id}/exportar/presupuesto.csv`} className="inline-flex min-h-11 items-center rounded-xl px-4 font-semibold text-route hover:bg-route-soft">
             Descargar presupuesto (CSV)
           </a>
         ) : null}
@@ -69,7 +69,7 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
       ) : (
         <>
           {a.scenarios.length > 1 ? (
-            <section aria-label="Recomendación" className="rounded-lg border-2 border-route bg-route-soft p-4">
+            <section aria-label="Recomendación" className="rounded-2xl border-2 border-route bg-route-soft p-4">
               <h3 className="font-display text-xl font-semibold">Recomendación</h3>
               {a.explanation.length === 0 ? (
                 <p className="mt-1">Con las prioridades actuales no hay un escenario que se destaque.</p>

@@ -59,7 +59,7 @@ function CostItemForm({
   const e = state.fieldErrors ?? {};
   const today = new Date().toISOString().slice(0, 10);
   return (
-    <form action={action} aria-label={item ? `Editar ${item.label}` : "Nueva partida"} className="mt-2 space-y-3 rounded-md border border-line bg-surface-2 p-3">
+    <form action={action} aria-label={item ? `Editar ${item.label}` : "Nueva partida"} className="mt-2 space-y-3 rounded-xl border border-line bg-surface-2 p-3">
       <Field label="Descripción" name="label" required defaultValue={v("label", item?.label)} error={e.label} />
       <div className="grid grid-cols-[1fr_6.5rem] gap-2">
         <Field label="Importe" name="amount" required inputMode="decimal" defaultValue={v("amount", item ? fmtAmount(item.amountCents) : undefined)} error={e.amount} />

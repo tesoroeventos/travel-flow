@@ -93,7 +93,7 @@ export default async function TransportPage({ params, searchParams }: PageProps<
               <section key={leg} className="space-y-3">
                 <h3 className="font-display text-2xl font-semibold">{LEG_LABELS[leg]}</h3>
                 {list.map(({ o, cost, segs, durationMin }) => (
-                  <article key={o.id} className="rounded-lg border border-line bg-surface p-4">
+                  <article key={o.id} className="rounded-2xl bg-surface shadow-card p-4">
                     <header className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm text-ink-soft">{MODE_LABELS[o.mode]}</p>
@@ -112,7 +112,7 @@ export default async function TransportPage({ params, searchParams }: PageProps<
                     </header>
 
                     {segs.length > 0 ? (
-                      <div className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm">
+                      <div className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-sm">
                         <p className="num">
                           {fmtDay(localDate(segs[0]!.departUtc, segs[0]!.departTz))}, {localTime(segs[0]!.departUtc, segs[0]!.departTz)} →{" "}
                           {fmtDay(localDate(segs[segs.length - 1]!.arriveUtc, segs[segs.length - 1]!.arriveTz))}, {localTime(segs[segs.length - 1]!.arriveUtc, segs[segs.length - 1]!.arriveTz)}

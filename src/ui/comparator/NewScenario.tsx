@@ -14,7 +14,7 @@ export function NewScenario({ tripId, suggested }: { tripId: string; suggested: 
     if (state.ok) close();
   }, [state, close]);
   return (
-    <form action={action} aria-label="Nuevo escenario" className="flex flex-wrap items-end gap-2 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label="Nuevo escenario" className="flex flex-wrap items-end gap-2 rounded-2xl bg-surface shadow-card p-4">
       <Field className="min-w-48 flex-1" label="Nombre del escenario" name="name" defaultValue={suggested} placeholder="Avión + hotel céntrico" />
       <SubmitButton>Crear escenario</SubmitButton>
       <Button type="button" variant="ghost" onClick={close}>

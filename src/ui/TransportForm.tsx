@@ -88,7 +88,7 @@ export function TransportForm({
   const n = (x: number | null | undefined) => (x === null || x === undefined ? undefined : String(x));
 
   return (
-    <form action={action} aria-label={option ? `Editar ${option.provider || "transporte"}` : "Nueva alternativa de transporte"} className="space-y-4 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label={option ? `Editar ${option.provider || "transporte"}` : "Nueva alternativa de transporte"} className="space-y-4 rounded-2xl bg-surface shadow-card p-4">
       <input type="hidden" name="tz" value={tz} />
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <div className="grid grid-cols-2 gap-3">
@@ -106,7 +106,7 @@ export function TransportForm({
         <legend className="text-sm font-medium">Horarios</legend>
         <p className="text-sm text-ink-soft">Opcional para auto o traslados. Con escalas, agregá un tramo por cada conexión.</p>
         {segs.map((s, i) => (
-          <div key={s.key} className="space-y-2 rounded-md border border-line p-3">
+          <div key={s.key} className="space-y-2 rounded-xl border border-line p-3">
             {i > 0 ? <Field label="Escala en" name={`seg_via_${i}`} required defaultValue={s.via} /> : null}
             {i === 0 ? (
               <SelectField label="Zona horaria de salida" name="seg_departTz_0" options={TZ_OPTIONS} value={tz} onChange={(e) => setDepartTz(e.target.value)} />
@@ -141,7 +141,7 @@ export function TransportForm({
 
       {!option ? <QuickPrice baseCurrency={baseCurrency} defaultUnit="per_person" error={e.price} /> : null}
 
-      <details className="rounded-md border border-line p-3">
+      <details className="rounded-xl border border-line p-3">
         <summary className="cursor-pointer font-medium">Más detalles</summary>
         <div className="mt-3 space-y-3">
           <CheckField label="Viaje internacional" name="international" defaultChecked={option?.international} />

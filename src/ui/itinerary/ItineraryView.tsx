@@ -57,8 +57,8 @@ function NoteEditor({ tripId, entry }: { tripId: string; entry: ItineraryEntry }
       }}
       className="mt-1 flex gap-2"
     >
-      <input name="note" defaultValue={entry.note ?? ""} aria-label={`Nota para ${entry.title}`} className="min-w-0 flex-1 rounded-md border border-line bg-surface px-2 py-1.5" />
-      <button className="rounded-md border border-line px-2 text-sm font-semibold">Guardar</button>
+      <input name="note" defaultValue={entry.note ?? ""} aria-label={`Nota para ${entry.title}`} className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-2 py-1.5" />
+      <button className="rounded-xl border border-line px-2 text-sm font-semibold">Guardar</button>
     </form>
   );
 }
@@ -156,7 +156,7 @@ export function ItineraryView({
   return (
     <div className="space-y-8">
       {message ? (
-        <p role="status" className="rounded-md border border-signal/50 bg-signal-soft px-3 py-2">
+        <p role="status" className="rounded-xl border border-signal/50 bg-signal-soft px-3 py-2">
           {message}
         </p>
       ) : null}
@@ -246,7 +246,7 @@ export function ItineraryView({
               </SortableContext>
             </DndContext>
             {day.date === lastDate && pendingCents > 0 ? (
-              <p className="mt-2 rounded-md bg-surface-2 px-3 py-2 text-sm">
+              <p className="mt-2 rounded-xl bg-surface-2 px-3 py-2 text-sm">
                 Pendiente de pago al cierre del viaje: <span className="num font-semibold">{fmtMoney(pendingCents, currency)}</span>
               </p>
             ) : null}
