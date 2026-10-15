@@ -21,6 +21,7 @@ const quickPriceSchema = z.object({
   price: z.string().optional(),
   priceCurrency: currencyField.optional(),
   priceUnit: z.enum(["total", "per_person", "per_night", "per_person_night", "per_day"]).default("total"),
+  priceTaxes: z.enum(["yes", "no", "unknown"]).default("yes"),
 });
 
 /** Si el formulario trae un precio rápido, crea la partida principal de la alternativa. */
@@ -46,6 +47,7 @@ async function createQuickPrice(
     amountCents: amount.data,
     currency: raw.data.priceCurrency ?? baseCurrency,
     unit: raw.data.priceUnit,
+    includesTaxes: raw.data.priceTaxes === "yes" ? true : raw.data.priceTaxes === "no" ? false : null,
     category,
     source: "Carga manual",
     consultedAt: new Date().toISOString().slice(0, 10),

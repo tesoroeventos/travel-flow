@@ -12,13 +12,24 @@ export function QuickPrice({ baseCurrency, defaultUnit, error }: { baseCurrency:
         <Field label="Precio" name="price" inputMode="decimal" placeholder="Opcional" error={error} />
         <SelectField label="Moneda" name="priceCurrency" options={CURRENCY_OPTIONS} defaultValue={baseCurrency} />
       </div>
-      <SelectField
-        className="mt-2"
-        label="Se cobra"
-        name="priceUnit"
-        options={(Object.keys(COST_UNIT_LABELS) as CostUnit[]).map((u) => ({ value: u, label: COST_UNIT_LABELS[u] }))}
-        defaultValue={defaultUnit}
-      />
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <SelectField
+          label="Se cobra"
+          name="priceUnit"
+          options={(Object.keys(COST_UNIT_LABELS) as CostUnit[]).map((u) => ({ value: u, label: COST_UNIT_LABELS[u] }))}
+          defaultValue={defaultUnit}
+        />
+        <SelectField
+          label="¿Incluye impuestos?"
+          name="priceTaxes"
+          options={[
+            { value: "yes", label: "Sí" },
+            { value: "no", label: "No" },
+            { value: "unknown", label: "No sé" },
+          ]}
+          defaultValue="yes"
+        />
+      </div>
       <p className="mt-2 text-sm text-ink-soft">Después podés sumar impuestos, equipaje, traslados y otros costos como partidas.</p>
     </div>
   );

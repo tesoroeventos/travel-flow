@@ -23,7 +23,7 @@ describe("explainScores", () => {
   it("explica empates", () => {
     const metrics = [m("A", { price: 100000000 }), m("B", { price: 97000000 })];
     const r = scoreScenarios(metrics, w({ price: 10 }), 5);
-    expect(explainScores(metrics, r, "A")).toContain("En precio total, A y B empatan.");
+    expect(explainScores(metrics, r, "A")).toContain("A y B empatan en precio total.");
   });
 
   it("explica cuando es más caro y más rápido", () => {
@@ -36,5 +36,13 @@ describe("explainScores", () => {
     const metrics = [m("A", { price: 1, comfort: 4 }), m("B", { price: 2 })];
     const r = scoreScenarios(metrics, w({ price: 1, comfort: 1 }), 5);
     expect(explainScores(metrics, r, "A")).toContain("No se consideró comodidad porque falta el dato en algún escenario.");
+  });
+
+  it("agrupa empates y criterios sin datos en una línea cada uno", () => {
+    const metrics = [m("A", { price: 1, transfers: 0, flexibility: 0 }), m("B", { price: 2, transfers: 0, flexibility: 0 })];
+    const r = scoreScenarios(metrics, w({ price: 1, transfers: 1, flexibility: 1, comfort: 1, experience: 1 }), 5);
+    const lines = explainScores(metrics, r, "A");
+    expect(lines).toContain("A y B empatan en transbordos y flexibilidad.");
+    expect(lines).toContain("No se consideraron comodidad y experiencia general porque falta el dato en algún escenario.");
   });
 });

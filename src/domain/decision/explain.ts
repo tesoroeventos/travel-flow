@@ -52,11 +52,13 @@ export function explainScores(metrics: ScenarioMetrics[], result: ScoreResult, r
   }
 
   const names = joinNames(metrics.map((m) => m.name));
-  for (const c of result.ties) {
-    if (metrics.length > 1) lines.push(`En ${lower(CRITERION_LABELS[c])}, ${names} empatan.`);
+  if (result.ties.length > 0 && metrics.length > 1) {
+    lines.push(`${names} empatan en ${joinNames(result.ties.map((c) => lower(CRITERION_LABELS[c])))}.`);
   }
-  for (const c of result.excluded) {
-    lines.push(`No se consideró ${lower(CRITERION_LABELS[c])} porque falta el dato en algún escenario.`);
+  if (result.excluded.length === 1) {
+    lines.push(`No se consideró ${lower(CRITERION_LABELS[result.excluded[0]!])} porque falta el dato en algún escenario.`);
+  } else if (result.excluded.length > 1) {
+    lines.push(`No se consideraron ${joinNames(result.excluded.map((c) => lower(CRITERION_LABELS[c])))} porque falta el dato en algún escenario.`);
   }
   return lines;
 }

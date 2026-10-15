@@ -143,10 +143,10 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
           ) : null}
 
           <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-            <table aria-label="Comparación de escenarios" className="num w-full min-w-max border-collapse text-sm">
+            <table aria-label="Comparación de escenarios" className="num w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line">
-                  <th scope="col" className="sticky left-0 bg-surface px-3 py-2 text-left font-medium text-ink-soft">
+                  <th scope="col" className="sticky left-0 w-32 bg-surface px-3 py-2 text-left font-medium text-ink-soft">
                     <span className="sr-only">Concepto</span>
                   </th>
                   {a.scenarios.map((s) => (
@@ -159,11 +159,11 @@ export default async function ComparatorPage({ params }: PageProps<"/viajes/[id]
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.label} className="border-b border-line last:border-0">
-                    <th scope="row" className="sticky left-0 bg-surface px-3 py-2 text-left font-normal text-ink-soft">
+                    <th scope="row" className="sticky left-0 w-32 min-w-32 bg-surface px-3 py-2 text-left font-normal leading-snug text-ink-soft">
                       {r.label}
                     </th>
                     {a.scenarios.map((s) => (
-                      <td key={s.id} className={`px-3 py-2 text-right align-top ${r.strong ? "font-semibold" : ""}`}>
+                      <td key={s.id} className={`min-w-36 max-w-56 whitespace-normal px-3 py-2 text-right align-top ${r.strong ? "font-semibold" : ""}`}>
                         {r.cell(s)}
                         {r.strong && s.summary.incomplete ? <div className="text-xs font-normal text-alert">Incompleto: falta tipo de cambio</div> : null}
                       </td>
