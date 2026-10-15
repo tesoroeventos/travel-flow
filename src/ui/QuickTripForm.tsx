@@ -8,14 +8,8 @@ import { Field, SelectField } from "./Field";
 import { Icon } from "./icons";
 
 type Values = Record<string, string>;
-const FIELDS = [
-  "destination",
-  "origin",
-  "startDate",
-  "endDate",
-  "travelers",
-  "budget",
-] as const;
+type FieldKey =
+  "destination" | "origin" | "startDate" | "endDate" | "travelers" | "budget";
 const fmtBudget = (n: number | null) =>
   n === null
     ? ""
@@ -85,7 +79,7 @@ export function QuickTripForm({
   const shown = { ...values, ...(state.values ?? {}) };
   const err = state.fieldErrors ?? {};
   const doubtful = (k: string) => doubt.includes(k);
-  const fieldProps = (k: (typeof FIELDS)[number]) => ({
+  const fieldProps = (k: FieldKey) => ({
     name: k,
     defaultValue: shown[k] ?? "",
     error: err[k],
