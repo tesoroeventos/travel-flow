@@ -40,3 +40,81 @@ export async function createBarilocheTrip(page: Page) {
   await page.getByRole("button", { name: "Crear viaje" }).click();
   await expect(page.getByRole("heading", { name: "Bariloche 2027" })).toBeVisible();
 }
+
+export interface TransportInput {
+  leg: "outbound" | "return" | "internal";
+  mode: string;
+  provider: string;
+  from: string;
+  to: string;
+  date: string;
+  departs: string;
+  arriveDate?: string;
+  arrives: string;
+  price: string;
+  unit?: string;
+  transferTo?: string;
+  transferFrom?: string;
+}
+
+export async function addTransport(page: Page, tripUrl: string, t: TransportInput) {
+  await page.goto(`${tripUrl}/transporte`);
+  await page.getByRole("button", { name: "Agregar transporte" }).click();
+  const form = page.getByRole("form", { name: "Nueva alternativa de transporte" });
+  await form.getByLabel("Tramo").selectOption(t.leg);
+  await form.getByLabel("Medio").selectOption(t.mode);
+  await form.getByLabel("Empresa o proveedor").fill(t.provider);
+  await form.getByLabel("Desde").fill(t.from);
+  await form.getByLabel("Hasta").fill(t.to);
+  await form.getByLabel("Sale el día").fill(t.date);
+  await form.getByLabel("Sale a las").fill(t.departs);
+  await form.getByLabel("Llega el día").fill(t.arriveDate ?? t.date);
+  await form.getByLabel("Llega a las").fill(t.arrives);
+  if (t.transferTo) await form.getByLabel("Minutos de traslado a la terminal").fill(t.transferTo);
+  if (t.transferFrom) await form.getByLabel("Minutos de traslado al llegar").fill(t.transferFrom);
+  await form.getByLabel("Precio").fill(t.price);
+  await form.getByLabel("Se cobra").selectOption(t.unit ?? "per_person");
+  await form.getByRole("button", { name: "Guardar alternativa" }).click();
+  await expect(page.getByRole("article").filter({ hasText: t.provider }).first()).toBeVisible();
+}
+
+export async function addLodging(page: Page, tripUrl: string, name: string, price: string, unit = "per_night") {
+  await page.goto(`${tripUrl}/alojamiento`);
+  await page.getByRole("button", { name: "Agregar alojamiento" }).click();
+  const form = page.getByRole("form", { name: "Nueva alternativa de alojamiento" });
+  await form.getByLabel("Nombre").fill(name);
+  await form.getByLabel("Precio").fill(price);
+  await form.getByLabel("Se cobra").selectOption(unit);
+  await form.getByRole("button", { name: "Guardar alternativa" }).click();
+  await expect(page.getByRole("article").filter({ hasText: name })).toBeVisible();
+}
+
+export async function addActivity(page: Page, tripUrl: string, a: { name: string; date: string; time?: string; duration: string; price?: string }) {
+  await page.goto(`${tripUrl}/actividades`);
+  await page.getByRole("button", { name: "Agregar actividad" }).click();
+  const form = page.getByRole("form", { name: "Nueva actividad" });
+  await form.getByLabel("Nombre").fill(a.name);
+  await form.getByLabel("Fecha").fill(a.date);
+  if (a.time) await form.getByLabel("Hora", { exact: true }).fill(a.time);
+  await form.getByLabel("Duración (min)").fill(a.duration);
+  if (a.price) await form.getByLabel("Precio").fill(a.price);
+  await form.getByRole("button", { name: "Guardar actividad" }).click();
+  await expect(page.getByRole("article").filter({ hasText: a.name })).toBeVisible();
+}
+
+export async function addScenario(page: Page, tripUrl: string, name: string, picks: string[]) {
+  await page.goto(`${tripUrl}/comparador`);
+  await page.getByRole("button", { name: "Nuevo escenario" }).click();
+  await page.getByLabel("Nombre del escenario").fill(name);
+  await page.getByRole("button", { name: "Crear escenario" }).click();
+  const region = page.getByRole("region", { name: `Escenario ${name}` });
+  await expect(region).toBeVisible();
+  await region.getByRole("button", { name: "Armar escenario" }).click();
+  for (const p of picks) {
+    const box = region.getByRole("checkbox", { name: p });
+    await box.check();
+    await expect(box).toBeChecked();
+  }
+  await expect(region.getByText(`${picks.length} ${picks.length === 1 ? "alternativa elegida" : "alternativas elegidas"}.`)).toBeVisible();
+  await region.getByRole("button", { name: "Listo" }).click();
+}
