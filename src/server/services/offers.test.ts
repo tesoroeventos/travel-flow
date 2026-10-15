@@ -118,6 +118,18 @@ describe("ofertas", () => {
     expect(offerCardsFromLoaded(data).filter((c) => c.group === "ida_y_vuelta")).toHaveLength(1);
   });
 
+  it("editar una oferta ida y vuelta aplica empresa, nombre y confort también a la vuelta", async () => {
+    const saved = await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta", from: "AEP", to: "BRC" })], {
+      kind: "captura",
+    });
+    const ida = saved.find((x) => x.ownerType === "transport_option")!;
+    const outboundId = (await loadTrip(db, ctx, tripId)).transport.find((t) => t.leg === "outbound")!.id;
+    expect(ida).toBeTruthy();
+    await updateOffer(db, ctx, { ownerType: "transport_option", id: outboundId }, { company: "Flybondi", name: "FO 5000", comfort: 2 });
+    const vta = (await loadTrip(db, ctx, tripId)).transport.find((t) => t.leg === "return")!;
+    expect(vta).toMatchObject({ provider: "Flybondi", serviceNumber: "FO 5000", comfortRating: 2, fromLabel: "BRC", toLabel: "AEP" });
+  });
+
   it("alojamiento sin horarios toma 14:00 y 10:00; '4 estrellas' guarda rating 8", async () => {
     await saveOffers(
       db,
@@ -284,7 +296,10 @@ describe("ofertas", () => {
     );
     const data = await loadTrip(db, ctx, tripId);
     expect(offerCardsFromLoaded(data).find((c) => c.group === "ida")!.totalCents).toBeNull();
-    expect(proposalsFromLoaded(data, { today: "2026-10-15" }).missing).toEqual(["el precio de “AR 1672 · directo”"]);
+    const p = proposalsFromLoaded(data, { today: "2026-10-15" });
+    expect(p.missing).toEqual([]);
+    expect(p.pending).toEqual(["el precio de “AR 1672 · directo”"]);
+    expect(p.cards).toEqual([]);
   });
 
   it("setUsdRate guarda USD→ARS con fecha de hoy y la propuesta deja de pedir el dólar", async () => {

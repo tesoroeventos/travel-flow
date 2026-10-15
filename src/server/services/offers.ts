@@ -753,6 +753,20 @@ export async function updateOffer(
       comfortRating: merged.comfort,
       notes: merged.detail || null,
     });
+    // La otra mitad de un "ida y vuelta" recibe los mismos datos (con el tramo invertido), salvo sus horarios.
+    if (wasPair && t.pairId) {
+      for (const sib of data.transport.filter((x) => x.pairId === t.pairId && x.id !== t.id)) {
+        await r.transport.update(ctx, sib.id, {
+          mode: MODE_OF[merged.kind] ?? sib.mode,
+          provider: merged.company || merged.name,
+          serviceNumber: merged.name || null,
+          fromLabel: merged.to || sib.fromLabel,
+          toLabel: merged.from || sib.toLabel,
+          comfortRating: merged.comfort,
+          notes: merged.detail || null,
+        });
+      }
+    }
     const cat =
       leg === "internal"
         ? "transport_internal"
