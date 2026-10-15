@@ -218,7 +218,13 @@ async function copyTrip(db: Db, srcCtx: Ctx, tripId: string, dstCtx: Ctx, name: 
     const mine = await r.rates.list(dstCtx);
     for (const rt of src.rates) {
       if (!mine.some((m) => m.fromCurrency === rt.fromCurrency && m.toCurrency === rt.toCurrency && m.asOf === rt.asOf)) {
-        await r.rates.create(dstCtx, { fromCurrency: rt.fromCurrency, toCurrency: rt.toCurrency, rate: rt.rate, asOf: rt.asOf, source: rt.source });
+        await r.rates.create(dstCtx, {
+          fromCurrency: rt.fromCurrency,
+          toCurrency: rt.toCurrency,
+          rate: rt.rate,
+          asOf: rt.asOf,
+          source: `Copiado de «${src.trip.name}»: ${rt.source}`,
+        });
       }
     }
   }

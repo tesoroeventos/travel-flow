@@ -41,6 +41,10 @@ describe("viaje demo", () => {
     expect(chosen.summary.totalCents).toBe(125503000);
     expect(chosen.summary.incomplete).toBe(false);
 
+    const rates = await r.rates.list(ctx);
+    expect(rates).toHaveLength(1);
+    expect(rates[0]!.source).toBe("Copiado de «Buenos Aires → Bariloche (demo)»: Banco Nación");
+
     const items = await r.costItems.list(ctx, copy.id);
     expect(items.every((i) => i.isDemo)).toBe(true);
     const edited = await updateCostItem(db, ctx, items[0]!.id, { amountCents: 1 });
