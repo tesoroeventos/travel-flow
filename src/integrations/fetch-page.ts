@@ -25,19 +25,48 @@ function v4Blocked(ip: string): boolean {
   );
 }
 
-/** Direcciones privadas, locales, link-local, de metadatos o reservadas. */
+/** Los 16 bytes de una IPv6 (acepta "::" y una IPv4 al final); null si no es válida. */
+function ipv6Bytes(ip: string): number[] | null {
+  let s = ip.toLowerCase().split("%")[0]!;
+  const v4 = /(\d+\.\d+\.\d+\.\d+)$/.exec(s);
+  if (v4) {
+    const p = v4[1]!.split(".").map(Number);
+    if (p.some((n) => n > 255)) return null;
+    s = s.slice(0, -v4[1]!.length) + ((p[0]! << 8) | p[1]!).toString(16) + ":" + ((p[2]! << 8) | p[3]!).toString(16);
+  }
+  const halves = s.split("::");
+  if (halves.length > 2) return null;
+  const head = halves[0] ? halves[0].split(":") : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
+  const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
+  if (fill < 0 || (halves.length === 1 && head.length !== 8)) return null;
+  const words = [...head, ...Array<string>(fill).fill("0"), ...tail].map((w) => parseInt(w, 16));
+  if (words.length !== 8 || words.some((w) => Number.isNaN(w) || w < 0 || w > 0xffff)) return null;
+  return words.flatMap((w) => [w >> 8, w & 0xff]);
+}
+
+const v4Of = (b: number[], i: number) => `${b[i]}.${b[i + 1]}.${b[i + 2]}.${b[i + 3]}`;
+const zero = (b: number[], from: number, to: number) => b.slice(from, to).every((x) => x === 0);
+
+/** Direcciones privadas, locales, link-local, de metadatos o reservadas, también escondidas dentro de IPv6. */
 export function isBlockedAddress(ip: string): boolean {
   const kind = isIP(ip);
   if (kind === 4) return v4Blocked(ip);
   if (kind !== 6) return true;
-  const s = ip.toLowerCase();
-  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(s);
-  if (mapped) return v4Blocked(mapped[1]!);
-  if (s === "::" || s === "::1") return true;
-  const first = parseInt(s.split(":")[0] || "0", 16);
-  if ((first & 0xfe00) === 0xfc00) return true; // fc00::/7
-  if ((first & 0xffc0) === 0xfe80) return true; // fe80::/10
-  if ((first & 0xff00) === 0xff00) return true; // multicast
+  const b = ipv6Bytes(ip);
+  if (!b) return true;
+  if (zero(b, 0, 16)) return true; // ::
+  if (zero(b, 0, 15) && b[15] === 1) return true; // ::1
+  if (zero(b, 0, 12)) return v4Blocked(v4Of(b, 12)); // ::/96 (IPv4 compatible)
+  if (zero(b, 0, 10) && b[10] === 0xff && b[11] === 0xff) return v4Blocked(v4Of(b, 12)); // ::ffff:0:0/96
+  if (zero(b, 0, 8) && b[8] === 0xff && b[9] === 0xff && zero(b, 10, 12)) return v4Blocked(v4Of(b, 12)); // ::ffff:0:0:0/96
+  if (b[0] === 0x00 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b) return v4Blocked(v4Of(b, 12)); // 64:ff9b::/96 y /48
+  if (b[0] === 0x20 && b[1] === 0x02) return v4Blocked(v4Of(b, 2)); // 2002::/16 (6to4)
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0x00 && b[3] === 0x00) return true; // 2001::/32 (Teredo)
+  if ((b[0]! & 0xfe) === 0xfc) return true; // fc00::/7
+  if (b[0] === 0xfe && (b[1]! & 0xc0) === 0x80) return true; // fe80::/10
+  if (b[0] === 0xff) return true; // multicast
+  if (b[0] === 0x01 && zero(b, 1, 8)) return true; // 100::/64 descarte
   return false;
 }
 

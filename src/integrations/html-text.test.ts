@@ -15,6 +15,24 @@ describe("htmlToText", () => {
     expect(t).not.toContain("color:red");
   });
 
+  it("no se rompe con entidades numéricas fuera de rango", () => {
+    expect(() => htmlToText("<p>Precio &#99999999; y &#x110000; $ 100</p>")).not.toThrow();
+    expect(htmlToText("<p>Hotel &#99999999; Sol</p>")).toContain("Hotel");
+  });
+
+  it("procesa en tiempo lineal una página hostil con miles de <script> sin cerrar", () => {
+    const hostile = `<p>Hotel</p>${'<script type="application/ld+json">x'.repeat(60_000)}`;
+    const t0 = performance.now();
+    const out = htmlToText(hostile);
+    expect(performance.now() - t0).toBeLessThan(1500);
+    expect(out).toContain("Hotel");
+    for (const piece of ["<title>x", "<!--x"]) {
+      const t1 = performance.now();
+      expect(htmlToText(`<p>Hotel</p>${piece.repeat(60_000)}`)).toContain("Hotel");
+      expect(performance.now() - t1).toBeLessThan(1500);
+    }
+  });
+
   it("corta a 30.000 caracteres", () => {
     expect(htmlToText(`<p>${"a ".repeat(40_000)}</p>`).length).toBeLessThanOrEqual(30_000);
   });

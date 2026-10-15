@@ -27,6 +27,18 @@ describe("fetchPage", () => {
     expect(isBlockedAddress(ip)).toBe(false),
   );
 
+  it.each(["::ffff:a9fe:a9fe", "::7f00:1", "64:ff9b::a9fe:a9fe", "2002:7f00:1::1", "::ffff:0:7f00:1", "0:0:0:0:0:ffff:7f00:1", "fe80::1%eth0"])(
+    "bloquea IPv6 que esconde una IPv4 privada o local: %s",
+    (ip) => expect(isBlockedAddress(ip)).toBe(true),
+  );
+
+  it("bloquea un link a la IP de metadatos escrita como IPv6", async () => {
+    const fetchImpl = vi.fn();
+    const r = await fetchPage("http://[::ffff:169.254.169.254]/latest/meta-data/", { lookup: publicLookup, fetchImpl });
+    expect(r).toMatchObject({ ok: false, error: { code: "blocked" } });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("bloquea una redirección hacia localhost", async () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(
       new Response(null, {
