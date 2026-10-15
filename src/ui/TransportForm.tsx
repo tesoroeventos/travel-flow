@@ -48,16 +48,23 @@ interface SegDraft {
 export function TransportForm({
   tripId,
   option,
-  tz,
+  startTz,
+  endTz,
   defaultDate,
   baseCurrency,
 }: {
   tripId: string;
   option: TransportFormValues | null;
-  tz: string;
+  startTz: string;
+  endTz: string;
   defaultDate: string;
   baseCurrency: string;
 }) {
+  const [leg, setLeg] = useState(option?.leg ?? "outbound");
+  const departDefault = leg === "outbound" ? startTz : endTz;
+  const arriveDefault = leg === "return" ? startTz : endTz;
+  const [departTz, setDepartTz] = useState<string | null>(option?.segments[0]?.departTz ?? null);
+  const tz = departTz ?? departDefault;
   const close = useCloseDisclosure();
   const [state, action] = useActionState<FormState, FormData>(saveTransportAction.bind(null, tripId, option?.id ?? null), {});
   useEffect(() => {
@@ -74,7 +81,7 @@ export function TransportForm({
         arriveTime: localTime(s.arriveUtc, s.arriveTz),
         arriveTz: s.arriveTz,
       }))
-    : [{ key: 0, via: "", departDate: "", departTime: "", arriveDate: "", arriveTime: "", arriveTz: tz }];
+    : [{ key: 0, via: "", departDate: "", departTime: "", arriveDate: "", arriveTime: "", arriveTz: "" }];
   const [segs, setSegs] = useState<SegDraft[]>(initial);
   const v = (k: string, d?: string | null) => state.values?.[k] ?? d ?? undefined;
   const e = state.fieldErrors ?? {};
@@ -85,7 +92,7 @@ export function TransportForm({
       <input type="hidden" name="tz" value={tz} />
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <div className="grid grid-cols-2 gap-3">
-        <SelectField label="Tramo" name="leg" options={LEGS.map((l) => ({ value: l, label: LEG_LABELS[l] }))} defaultValue={v("leg", option?.leg ?? "outbound")} />
+        <SelectField label="Tramo" name="leg" options={LEGS.map((l) => ({ value: l, label: LEG_LABELS[l] }))} value={leg} onChange={(e) => setLeg(e.target.value)} />
         <SelectField label="Medio" name="mode" options={MODES.map((m) => ({ value: m, label: MODE_LABELS[m] }))} defaultValue={v("mode", option?.mode ?? "flight")} />
       </div>
       <Field label="Empresa o proveedor" name="provider" defaultValue={v("provider", option?.provider)} placeholder="Aerolínea, empresa de micros…" />
@@ -101,13 +108,16 @@ export function TransportForm({
         {segs.map((s, i) => (
           <div key={s.key} className="space-y-2 rounded-md border border-line p-3">
             {i > 0 ? <Field label="Escala en" name={`seg_via_${i}`} required defaultValue={s.via} /> : null}
+            {i === 0 ? (
+              <SelectField label="Zona horaria de salida" name="seg_departTz_0" options={TZ_OPTIONS} value={tz} onChange={(e) => setDepartTz(e.target.value)} />
+            ) : null}
             <div className="grid grid-cols-2 gap-2">
               <Field label="Sale el día" name={`seg_departDate_${i}`} type="date" defaultValue={s.departDate || (i === 0 ? undefined : "")} placeholder={defaultDate} />
               <Field label="Sale a las" name={`seg_departTime_${i}`} type="time" defaultValue={s.departTime} />
               <Field label="Llega el día" name={`seg_arriveDate_${i}`} type="date" defaultValue={s.arriveDate} error={i === 0 ? e.seg_arriveDate_0 : undefined} />
               <Field label="Llega a las" name={`seg_arriveTime_${i}`} type="time" defaultValue={s.arriveTime} />
             </div>
-            <SelectField label="Zona horaria de llegada" name={`seg_arriveTz_${i}`} options={TZ_OPTIONS} defaultValue={s.arriveTz} />
+            <SelectField key={`${leg}-${s.key}`} label="Zona horaria de llegada" name={`seg_arriveTz_${i}`} options={TZ_OPTIONS} defaultValue={s.arriveTz || arriveDefault} />
             {i > 0 ? (
               <Button type="button" variant="ghost" onClick={() => setSegs((all) => all.filter((x) => x.key !== s.key))}>
                 Quitar tramo
@@ -118,7 +128,7 @@ export function TransportForm({
         <Button
           type="button"
           variant="secondary"
-          onClick={() => setSegs((all) => [...all, { key: Date.now(), via: "", departDate: "", departTime: "", arriveDate: "", arriveTime: "", arriveTz: tz }])}
+          onClick={() => setSegs((all) => [...all, { key: Date.now(), via: "", departDate: "", departTime: "", arriveDate: "", arriveTime: "", arriveTz: "" }])}
         >
           Agregar escala
         </Button>

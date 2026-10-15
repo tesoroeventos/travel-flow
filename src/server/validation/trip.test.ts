@@ -40,6 +40,17 @@ describe("tripCreateSchema", () => {
     });
   });
 
+  it("acepta una zona horaria distinta para el destino", () => {
+    const r = tripCreateSchema.parse({ ...validTrip, endTz: "Europe/Madrid", endTime: "18:30" });
+    expect(r).toMatchObject({ startTz: "America/Argentina/Buenos_Aires", endTz: "Europe/Madrid", endAt: new Date("2027-01-16T17:30:00.000Z") });
+  });
+
+  it("compara salida y regreso como instantes reales", () => {
+    const r = tripCreateSchema.safeParse({ ...validTrip, endDate: "2027-01-10", endTime: "10:00", startTime: "08:00", endTz: "Europe/Madrid" });
+    // 10:00 Madrid = 06:00 Buenos Aires, antes de la salida de las 08:00
+    expect(firstError(r)?.message).toBe("La fecha de regreso debe ser posterior a la salida");
+  });
+
   it("rechaza regreso antes de la salida", () => {
     const r = tripCreateSchema.safeParse({ ...validTrip, endDate: "2027-01-09" });
     expect(firstError(r)).toMatchObject({ message: "La fecha de regreso debe ser posterior a la salida", path: ["endDate"] });

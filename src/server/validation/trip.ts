@@ -33,6 +33,7 @@ export const tripCreateSchema = z
     endDate: dateField,
     endTime: timeField,
     tz: tzField,
+    endTz: z.string().trim().optional(),
     flexibilityDays: intField(0, "La flexibilidad no puede ser negativa").default(0),
     adults: intField(1, "Tiene que viajar al menos un adulto"),
     children: intField(0, "Cantidad inválida").default(0),
@@ -43,16 +44,17 @@ export const tripCreateSchema = z
     baseCurrency: currencyField,
   })
   .superRefine((d, ctx) => {
-    if (`${d.endDate}T${d.endTime}` <= `${d.startDate}T${d.startTime}`) {
+    const endTz = d.endTz || d.tz;
+    if (zonedToUtc(d.endDate, d.endTime, endTz) <= zonedToUtc(d.startDate, d.startTime, d.tz)) {
       ctx.addIssue({ code: "custom", message: "La fecha de regreso debe ser posterior a la salida", path: ["endDate"] });
     }
   })
-  .transform(({ startDate, startTime, endDate, endTime, tz, budget, ...rest }) => ({
+  .transform(({ startDate, startTime, endDate, endTime, tz, endTz, budget, ...rest }) => ({
     ...rest,
     startAt: new Date(zonedToUtc(startDate, startTime, tz)),
     startTz: tz,
-    endAt: new Date(zonedToUtc(endDate, endTime, tz)),
-    endTz: tz,
+    endAt: new Date(zonedToUtc(endDate, endTime, endTz || tz)),
+    endTz: endTz || tz,
     budgetCents: budget,
   }));
 

@@ -28,6 +28,7 @@ export default async function EditTripPage({ params }: PageProps<"/viajes/[id]/e
     endDate: localDate(e, trip.endTz),
     endTime: localTime(e, trip.endTz),
     tz: trip.startTz,
+    endTz: trip.endTz,
     flexibilityDays: String(trip.flexibilityDays),
     adults: String(travelers.filter((t) => t.kind === "adult").length),
     children: String(travelers.filter((t) => t.kind === "child").length),

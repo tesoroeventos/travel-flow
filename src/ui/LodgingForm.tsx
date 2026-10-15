@@ -10,6 +10,7 @@ import { Button, SubmitButton } from "./Button";
 import { ErrorBanner } from "./Feedback";
 import { QuickPrice } from "./QuickPrice";
 import { useCloseDisclosure } from "./Disclosure";
+import { TZ_OPTIONS } from "./options";
 
 export interface LodgingFormValues {
   id: string;
@@ -62,7 +63,7 @@ export function LodgingForm({
 
   return (
     <form action={action} aria-label={option ? `Editar ${option.name}` : "Nueva alternativa de alojamiento"} className="space-y-4 rounded-lg border border-line bg-surface p-4">
-      <input type="hidden" name="tz" value={otz} />
+
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <Field label="Nombre" name="name" required defaultValue={v("name", option?.name)} error={e.name} />
       <div className="grid grid-cols-2 gap-3">
@@ -70,6 +71,7 @@ export function LodgingForm({
         <Field label="Capacidad (personas)" name="capacity" type="number" min={1} defaultValue={v("capacity", n(option?.capacity))} />
       </div>
       <Field label="Dirección" name="address" defaultValue={v("address", option?.address)} />
+      <SelectField label="Zona horaria" name="tz" options={TZ_OPTIONS} defaultValue={v("tz", otz)} />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Check-in" name="checkInDate" type="date" required defaultValue={v("checkInDate", option ? localDate(option.checkInAt, otz) : tripStart)} error={e.checkInDate} />
         <Field label="Hora de check-in" name="checkInTime" type="time" defaultValue={v("checkInTime", option ? localTime(option.checkInAt, otz) : "15:00")} />

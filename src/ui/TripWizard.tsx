@@ -14,6 +14,7 @@ import { CheckField, Field, SelectField, TextAreaField } from "./Field";
 import { Button, SubmitButton } from "./Button";
 import { ErrorBanner } from "./Feedback";
 import { CURRENCY_OPTIONS, TZ_OPTIONS } from "./options";
+import { zonedToUtc } from "@/domain/time/calendar";
 import { PREF_VALUE_LABELS } from "./labels";
 
 export interface WizardDefaults {
@@ -21,7 +22,7 @@ export interface WizardDefaults {
 }
 
 const STEP_FIELDS: string[][] = [
-  ["name", "originLabel", "homeLabel", "destinationLabel", "alternativeDestinations", "startDate", "startTime", "endDate", "endTime", "tz", "flexibilityDays", "adults", "children", "infants", "rooms", "tripType", "budget", "baseCurrency"],
+  ["name", "originLabel", "homeLabel", "destinationLabel", "alternativeDestinations", "startDate", "startTime", "endDate", "endTime", "tz", "endTz", "flexibilityDays", "adults", "children", "infants", "rooms", "tripType", "budget", "baseCurrency"],
   ["budgetLevel", "priority", "transportPreference", "lodgingCategory", "lodgingLocation", "interests", "pace", "accessibility", "luggage", "dietary", "otherNeeds"],
   ["noTravelHours", "maxLegHours", "maxPerNight", "maxStops", "maxDistanceKm", "needsParking", "needsPublicTransport", "mandatoryActivities"],
 ];
@@ -93,9 +94,16 @@ export function TripWizard({
     }
     if (step === 0) {
       const fd = new FormData(form);
-      const start = `${fd.get("startDate")}T${fd.get("startTime")}`;
-      const end = `${fd.get("endDate")}T${fd.get("endTime")}`;
-      if (end <= start) {
+      const tz = String(fd.get("tz") || "America/Argentina/Buenos_Aires");
+      const endTz = String(fd.get("endTz") || tz);
+      let invalidRange = true;
+      try {
+        invalidRange =
+          zonedToUtc(String(fd.get("endDate")), String(fd.get("endTime")), endTz) <= zonedToUtc(String(fd.get("startDate")), String(fd.get("startTime")), tz);
+      } catch {
+        invalidRange = true;
+      }
+      if (invalidRange) {
         setLocalError("La fecha de regreso debe ser posterior a la salida");
         return;
       }
@@ -165,7 +173,10 @@ export function TripWizard({
           <Field label="Hora de regreso" name="endTime" type="time" required defaultValue={v("endTime") ?? "20:00"} error={e.endTime} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <SelectField label="Zona horaria del viaje" name="tz" options={TZ_OPTIONS} defaultValue={v("tz") ?? "America/Argentina/Buenos_Aires"} />
+          <SelectField label="Zona horaria de salida" name="tz" options={TZ_OPTIONS} defaultValue={v("tz") ?? "America/Argentina/Buenos_Aires"} />
+          <SelectField label="Zona horaria del destino" name="endTz" options={TZ_OPTIONS} defaultValue={v("endTz") ?? v("tz") ?? "America/Argentina/Buenos_Aires"} hint="La del regreso; cambiala si viajás a otro huso horario." />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Flexibilidad de fechas (días)" name="flexibilityDays" type="number" min={0} inputMode="numeric" defaultValue={v("flexibilityDays") ?? "0"} error={e.flexibilityDays} />
         </div>
 

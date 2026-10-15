@@ -57,7 +57,7 @@ export default async function TransportPage({ params, searchParams }: PageProps<
       </p>
 
       <Disclosure label="Agregar transporte" variant="primary">
-        <TransportForm tripId={id} option={null} tz={trip.startTz} defaultDate={startDate} baseCurrency={base} />
+        <TransportForm tripId={id} option={null} startTz={trip.startTz} endTz={trip.endTz} defaultDate={startDate} baseCurrency={base} />
       </Disclosure>
 
       {rows.length === 0 ? (
@@ -146,7 +146,8 @@ export default async function TransportPage({ params, searchParams }: PageProps<
                         <TransportForm
                           tripId={id}
                           option={{ ...o, segments: o.segments }}
-                          tz={trip.startTz}
+                          startTz={trip.startTz}
+                          endTz={trip.endTz}
                           defaultDate={startDate}
                           baseCurrency={base}
                         />
