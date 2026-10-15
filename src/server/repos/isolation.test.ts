@@ -38,10 +38,11 @@ describe("aislamiento entre workspaces", () => {
     w2 = await ctxFor(db, "dos@x.com");
     const trip = await r.trips.create(w1, tripInput);
     tripId = trip.id;
+    const scenario = await r.scenarios.create(w1, { tripId, name: "A" });
     const item = await r.costItems.create(w1, {
       tripId,
       ownerType: "scenario",
-      ownerId: tripId,
+      ownerId: scenario.id,
       label: "Comida",
       amountCents: 100,
       currency: "ARS",

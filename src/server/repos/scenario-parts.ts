@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client";
 import {
+  costItems,
   decisionWeights,
   itineraryOverrides,
   scenarioItemToggles,
@@ -10,7 +11,7 @@ import {
   trips,
 } from "../db/schema";
 import { NotFoundError, type Ctx } from "../context";
-import { assertTrip, ownsTrip } from "./child";
+import { assertOwnerInTrip, assertTrip, ownsTrip } from "./child";
 import type { Criterion, RatingCriterion } from "@/domain/decision/types";
 
 export type SelectionOwnerType = "transport_option" | "lodging_option" | "activity";
@@ -35,8 +36,9 @@ export function makeScenarioParts(db: Db) {
 
   return {
     async setSelection(ctx: Ctx, scenarioId: string, ownerType: SelectionOwnerType, ownerId: string, selected: boolean) {
-      await assertScenario(ctx, scenarioId);
+      const tripId = await assertScenario(ctx, scenarioId);
       if (selected) {
+        await assertOwnerInTrip(db, ctx, tripId, ownerType, ownerId);
         await db.insert(scenarioSelections).values({ scenarioId, ownerType, ownerId }).onConflictDoNothing();
       } else {
         await db
@@ -58,7 +60,12 @@ export function makeScenarioParts(db: Db) {
     },
 
     async setToggle(ctx: Ctx, scenarioId: string, costItemId: string, included: boolean) {
-      await assertScenario(ctx, scenarioId);
+      const tripId = await assertScenario(ctx, scenarioId);
+      const item = await db
+        .select({ id: costItems.id })
+        .from(costItems)
+        .where(and(eq(costItems.id, costItemId), eq(costItems.tripId, tripId)));
+      if (item.length === 0) throw new NotFoundError("la partida", costItemId);
       await db
         .insert(scenarioItemToggles)
         .values({ scenarioId, costItemId, included })

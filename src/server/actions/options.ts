@@ -207,6 +207,7 @@ export async function carCalculatorAction(tripId: string, optionId: string, _p: 
   const db = await getDb();
   const r = makeRepos(db);
   const [trip, opt] = await Promise.all([r.trips.require(ctx, tripId), r.transport.require(ctx, optionId)]);
+  if (opt.tripId !== trip.id) return { ok: false, message: "La alternativa no pertenece a este viaje" };
   const d = parsed.data;
   const extraKm = d.extraKm?.trim() ? d.extraKm.replace(/\./g, "").replace(",", ".") : "0";
   const items = carCostItems({
