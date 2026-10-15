@@ -5,7 +5,7 @@ TravelFlow es una sola app Next.js con Postgres. En producción usa Postgres de 
 ## 1. Subir el código a GitHub
 
 ```bash
-git remote add origin git@github.com:<tu-usuario>/travelflow.git
+git remote add origin https://github.com/tesoroeventos/travel-flow.git
 git push -u origin master
 ```
 
