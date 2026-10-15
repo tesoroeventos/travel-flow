@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { assertAiConfigSafe, getAI } from "./index";
 
 const saved = { key: process.env.ANTHROPIC_API_KEY, fake: process.env.AI_FAKE };
@@ -54,5 +54,15 @@ describe("getAI", () => {
   it("producción con AI_FAKE=1 no arranca", () => {
     expect(() => assertAiConfigSafe({ NODE_ENV: "production", AI_FAKE: "1" } as never)).toThrow();
     expect(() => assertAiConfigSafe({ NODE_ENV: "production" } as never)).not.toThrow();
+  });
+
+  it("en producción getAI se niega a usar la simulada aunque no haya pasado por la migración", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("AI_FAKE", "1");
+    try {
+      expect(() => getAI()).toThrow(/AI_FAKE=1 no está permitido/);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

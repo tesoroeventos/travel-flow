@@ -1,5 +1,6 @@
 import { err } from "@/domain/result";
 import { anthropicAI } from "./anthropic";
+import { assertAiConfigSafe } from "./guard";
 import { fakeAI } from "./fake";
 import { AI_MESSAGES, type TravelAI } from "./types";
 
@@ -16,6 +17,7 @@ const unconfiguredAI: TravelAI = {
 
 /** La IA según el entorno: simulada (AI_FAKE=1), real (ANTHROPIC_API_KEY) o no configurada. */
 export function getAI(): TravelAI {
+  assertAiConfigSafe(process.env);
   if (process.env.AI_FAKE === "1") return fakeAI;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return unconfiguredAI;
