@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node --import tsx scripts/migrate.ts && next start",
     "lint": "eslint",
     "typecheck": "rm -rf .next/dev/types && next typegen && tsc --noEmit",
     "test": "vitest run",
