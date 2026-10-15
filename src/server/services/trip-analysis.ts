@@ -238,7 +238,24 @@ export function itineraryFromLoaded(data: LoadedTrip): Itinerary | null {
       tz: l.tz,
     })),
     activities: sel.activities.map((a) => {
-      const own = data.costItems.filter((i) => i.ownerType === "activity" && i.ownerId === a.id);
+      const own = data.costItems.filter((i) => i.ownerType === "activity" && i.ownerId === a.id).map((i) => toCostInput(data, i));
+      const cost =
+        own.length > 0
+          ? computeScenarioCosts({
+              travelers: data.travelers.length,
+              tripDays: tripDays(iso(data.trip.startAt), data.trip.startTz, iso(data.trip.endAt), data.trip.endTz),
+              baseCurrency: data.trip.baseCurrency,
+              budgetCents: 0,
+              contingencyPct: "0",
+              contingencyCategories: [],
+              rateDate: localDate(iso(data.trip.startAt), data.trip.startTz),
+              today: localDate(iso(data.trip.startAt), data.trip.startTz),
+              staleDays: data.trip.staleDays,
+              rates: data.rates.map(toDomainRate),
+              items: own,
+              coverage: { hasOutbound: true, hasReturn: true, uncoveredNights: 0 },
+            })
+          : null;
       return {
         id: a.id,
         name: a.name,
@@ -251,9 +268,7 @@ export function itineraryFromLoaded(data: LoadedTrip): Itinerary | null {
         lat: a.lat,
         lng: a.lng,
         travelMinFromPrev: a.travelMinFromPrev,
-        costCents: own.length > 0 && own.every((i) => i.currency === data.trip.baseCurrency)
-          ? own.reduce((s, i) => s + i.amountCents, 0)
-          : null,
+        costCents: cost && !cost.incomplete ? cost.totalCents : null,
         requiresBooking: a.requiresBooking,
         url: a.url,
         notes: a.notes,

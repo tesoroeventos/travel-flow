@@ -60,6 +60,15 @@ describe("buildItinerary", () => {
     expect(leave?.localTime).toBe("07:15");
   });
 
+  it("el costo de una actividad en el itinerario es su total (no el precio unitario)", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const seed = await seedBarilocheA(db, ctx);
+    const it = await buildItinerary(db, ctx, seed.tripId);
+    const exc = it!.days.flatMap((d) => d.entries).find((e) => e.key === `activity:${seed.excursion.id}:0`);
+    expect(exc?.details.costCents).toBe("8000000");
+  });
+
   it("sin escenario elegido devuelve null", async () => {
     const db = await createTestDb();
     const ctx = await makeCtx(db);
