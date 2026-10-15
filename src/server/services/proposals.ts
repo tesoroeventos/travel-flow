@@ -24,6 +24,7 @@ import { makeScenarioParts } from "../repos/scenario-parts";
 import { chooseScenario } from "./confirm";
 import { loadTrip, type LoadedTrip } from "./load-trip";
 import { toCostInput } from "./trip-analysis";
+import { itemsTotalCents, ownerItems } from "./costing";
 
 /** Descripción con la que se marcan los escenarios creados desde "Tus 3 opciones". */
 export const PROPOSAL_MARK = "propuesta";
@@ -164,6 +165,29 @@ export function proposalsFromLoaded(
     comfort: l.qualityRating,
   }));
   const missing = missingForProposals(legs, lodgings.length);
+  const ex0 = extras(data);
+  const pairIds = (t: LoadedTrip["transport"][number]) =>
+    t.pairId
+      ? data.transport.filter((x) => x.pairId === t.pairId).map((x) => x.id)
+      : [t.id];
+  const pricedTransport = (t: LoadedTrip["transport"][number]) =>
+    ownerItems(data, "transport_option", pairIds(t)).length > 0;
+  const pricedOther = (type: PieceOwner, id: string) =>
+    ownerItems(data, type, [id]).length > 0;
+  const unpriced = [
+    ...data.transport
+      .filter(
+        (t) => (t.leg !== "internal" || t.inProposals) && !pricedTransport(t),
+      )
+      .map((t) => t.serviceNumber || t.provider),
+    ...data.lodging
+      .filter((l) => !pricedOther("lodging_option", l.id))
+      .map((l) => l.name),
+    ...ex0.activities
+      .filter((a) => !pricedOther("activity", a.id))
+      .map((a) => a.name),
+  ];
+  for (const n of new Set(unpriced)) missing.push(`el precio de “${n}”`);
 
   const itemsOf = (type: PieceOwner, id: string): CostItemInput[] =>
     data.costItems
@@ -180,6 +204,11 @@ export function proposalsFromLoaded(
     const legRows = legIds.map((id) =>
       data.transport.find((t) => t.id === id)!,
     );
+    if (
+      !legRows.every(pricedTransport) ||
+      !pricedOther("lodging_option", lodgingId)
+    )
+      return null;
     const summary = computeScenarioCosts({
       travelers,
       tripDays: days,
@@ -266,23 +295,8 @@ export function proposalsFromLoaded(
       }
     } else why = comfortWords(data, combo);
 
-    const pieceCost = (type: PieceOwner, id: string) => {
-      const s = computeScenarioCosts({
-        travelers,
-        tripDays: days,
-        baseCurrency: trip.baseCurrency,
-        budgetCents: 0,
-        contingencyPct: "0",
-        contingencyCategories: [],
-        rateDate,
-        today,
-        staleDays: trip.staleDays,
-        rates,
-        items: itemsOf(type, id),
-        coverage: { hasOutbound: true, hasReturn: true, uncoveredNights: 0 },
-      });
-      return s.incomplete ? null : s.totalCents;
-    };
+    const pieceCost = (type: PieceOwner, id: string) =>
+      itemsTotalCents(data, ownerItems(data, type, [id]), today);
     const lod = data.lodging.find((l) => l.id === combo.lodgingId)!;
     const pieces: ProposalView["pieces"] = [
       ...combo.legIds.map((id) => {
@@ -290,8 +304,16 @@ export function proposalsFromLoaded(
         return {
           ownerType: "transport_option" as const,
           id,
-          label: `${legLabel(t)} · ${t.serviceNumber || t.provider}`,
-          detail: t.provider,
+          label:
+            t.mode === "own_car"
+              ? `${legLabel(t)}${t.serviceNumber ? ` · ${t.serviceNumber}` : ""}`
+              : `${legLabel(t)} · ${t.serviceNumber || t.provider}`,
+          detail:
+            t.pairId && t.leg === "return"
+              ? "Incluido en el precio de la ida"
+              : t.mode === "own_car"
+                ? "Nafta y peajes"
+                : t.provider,
           costCents: pieceCost("transport_option", id),
         };
       }),
