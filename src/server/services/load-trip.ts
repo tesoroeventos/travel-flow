@@ -23,6 +23,7 @@ export async function loadTrip(db: Db, ctx: Ctx, tripId: string) {
     rates,
     overrides,
     expenses,
+    stops,
   ] = await Promise.all([
     r.travelers.list(ctx, tripId),
     r.transport.list(ctx, tripId),
@@ -38,6 +39,7 @@ export async function loadTrip(db: Db, ctx: Ctx, tripId: string) {
     r.rates.list(ctx),
     parts.listOverrides(ctx, tripId),
     r.expenses.list(ctx, tripId),
+    r.stops.list(ctx, tripId),
   ]);
   return {
     trip,
@@ -55,6 +57,7 @@ export async function loadTrip(db: Db, ctx: Ctx, tripId: string) {
     rates,
     overrides,
     expenses,
+    stops,
   };
 }
 
