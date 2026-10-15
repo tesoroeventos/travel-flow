@@ -7,7 +7,7 @@ import { Button } from "../Button";
 export function ChangesBanner({ tripId, changed, added, removedCount }: { tripId: string; changed: string[]; added: string[]; removedCount: number }) {
   const [pending, start] = useTransition();
   return (
-    <section aria-label="Cambió tu itinerario" className="rounded-lg border-2 border-signal bg-signal-soft p-4">
+    <section aria-label="Cambió tu itinerario" className="rounded-2xl border-2 border-signal bg-signal-soft p-4">
       <h3 className="font-display text-xl font-semibold">Cambió tu itinerario</h3>
       <p className="mt-1 text-sm">Revisá estas partes: cambió un horario, un alojamiento o una actividad.</p>
       <ul className="mt-2 list-disc pl-5">

@@ -38,13 +38,13 @@ export default async function Dashboard() {
           <p className="text-ink-soft">Hola{user ? `, ${user.name.split(" ")[0]}` : ""}</p>
           <h1 className="font-display text-4xl font-bold tracking-tight">Tus viajes</h1>
         </div>
-        <LinkButton href="/viajes/nuevo">Crear viaje</LinkButton>
+        <LinkButton href="/viajes/nuevo">Viaje nuevo</LinkButton>
       </div>
 
       {cards.length === 0 ? (
         <div className="mt-8">
-          <EmptyState title="Todavía no armaste ningún viaje" action={<LinkButton href="/viajes/nuevo">Crear viaje</LinkButton>}>
-            Cargá origen, destino y fechas. Después comparás transporte y alojamiento con el costo real de punta a punta.
+          <EmptyState title="Todavía no armaste ningún viaje" action={<LinkButton href="/viajes/nuevo">Viaje nuevo</LinkButton>}>
+            Contá el viaje en una frase, subí capturas de vuelos, micros y hoteles, y TravelFlow te arma las 3 mejores opciones.
           </EmptyState>
         </div>
       ) : null}

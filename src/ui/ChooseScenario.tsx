@@ -27,7 +27,7 @@ export function ChooseScenario({
       <fieldset className="space-y-2">
         <legend className="sr-only">Escenario</legend>
         {scenarios.map((s) => (
-          <label key={s.id} className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border border-line bg-surface px-4 has-[:checked]:border-route has-[:checked]:bg-route-soft">
+          <label key={s.id} className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-surface shadow-card px-4 has-[:checked]:border-route has-[:checked]:bg-route-soft">
             <input type="radio" name="scenarioId" value={s.id} defaultChecked={s.id === (chosenId ?? recommendedId)} className="size-5 accent-route" />
             <span className="flex-1 font-semibold">
               {s.name}

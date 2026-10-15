@@ -7,10 +7,10 @@ import { useFormStatus } from "react-dom";
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-bold transition disabled:cursor-not-allowed disabled:opacity-50";
 const variants: Record<Variant, string> = {
   primary: "bg-route text-route-ink hover:brightness-110",
-  secondary: "border border-line-strong bg-surface text-ink hover:border-route",
+  secondary: "border-[1.5px] border-line bg-surface text-ink hover:border-ink-soft",
   ghost: "text-route hover:bg-route-soft",
   danger: "border border-alert/50 bg-surface text-alert hover:bg-alert-soft",
 };

@@ -5,8 +5,19 @@ import { makeCtx } from "./demo-data";
 import { analyzeTrip } from "./trip-analysis";
 import { createShareLink, duplicateSharedTrip, duplicateTrip, loadSharedTrip, revokeShareLink, seedDemo } from "./demo";
 import { updateCostItem } from "./options";
+import { proposalsFromLoaded } from "./proposals";
 
 describe("viaje demo", () => {
+  it("muestra las 3 propuestas: barata, rápida y cómoda", async () => {
+    const db = await createTestDb();
+    const { token } = { token: (await seedDemo(db)).shareToken };
+    const shared = await loadSharedTrip(db, token);
+    const p = proposalsFromLoaded(shared!.data, { today: "2026-10-15" });
+    expect(p.missing).toEqual([]);
+    expect(p.cards.flatMap((c) => c.tags).sort()).toEqual(["barata", "comoda", "rapida"]);
+    expect(p.cards.length).toBe(3);
+  });
+
   it("se siembra una sola vez con tres escenarios y el A elegido", async () => {
     const db = await createTestDb();
     const first = await seedDemo(db, { shareToken: "demo-token" });
@@ -33,7 +44,12 @@ describe("viaje demo", () => {
     const r = makeRepos(db);
 
     const mine = await r.trips.get(ctx, copy.id);
-    expect(mine).toMatchObject({ workspaceId: ctx.workspaceId, isDemo: true, publicShareToken: null, status: "planning" });
+    expect(mine).toMatchObject({
+      workspaceId: ctx.workspaceId,
+      isDemo: true,
+      publicShareToken: null,
+      status: "planning",
+    });
     expect(await r.bookings.list(ctx, copy.id)).toEqual([]);
 
     const a = await analyzeTrip(db, ctx, copy.id, { today: "2027-01-05" });
@@ -47,7 +63,9 @@ describe("viaje demo", () => {
 
     const items = await r.costItems.list(ctx, copy.id);
     expect(items.every((i) => i.isDemo)).toBe(true);
-    const edited = await updateCostItem(db, ctx, items[0]!.id, { amountCents: 1 });
+    const edited = await updateCostItem(db, ctx, items[0]!.id, {
+      amountCents: 1,
+    });
     expect(edited.isDemo).toBe(false);
 
     const original = await loadSharedTrip(db, "demo-token");

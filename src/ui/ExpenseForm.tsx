@@ -46,7 +46,7 @@ export function ExpenseForm({
   const v = (k: string, d?: string | null) => state.values?.[k] ?? d ?? undefined;
   const e = state.fieldErrors ?? {};
   return (
-    <form action={action} aria-label={expense ? `Editar ${expense.description}` : "Nuevo gasto"} className="space-y-3 rounded-lg border border-line bg-surface p-4">
+    <form action={action} aria-label={expense ? `Editar ${expense.description}` : "Nuevo gasto"} className="space-y-3 rounded-2xl bg-surface shadow-card p-4">
       {state.message ? <ErrorBanner>{state.message}</ErrorBanner> : null}
       <div className="grid grid-cols-2 gap-2">
         <Field label="Fecha" name="date" type="date" required defaultValue={v("date", expense?.date ?? defaultDate)} error={e.date} />

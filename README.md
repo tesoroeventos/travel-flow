@@ -2,49 +2,45 @@
 
 Plataforma de planificación y logística de viajes: compará combinaciones completas de transporte, alojamiento y actividades con el **costo real puerta a puerta**, elegí la que te conviene y generá el itinerario desde que salís de casa hasta que volvés.
 
-Núcleo MVP (sub-proyecto 1). Diseño: `docs/superpowers/specs/2026-10-14-travelflow-design.md`. Plan: `docs/superpowers/plans/2026-10-14-travelflow-mvp.md`. Despliegue: `DEPLOY.md`.
+Diseño: `docs/superpowers/specs/2026-10-14-travelflow-design.md` (MVP) y `docs/superpowers/specs/2026-10-15-carga-rapida-design.md` (carga rápida). Despliegue: `DEPLOY.md`.
 
 ## Qué hace
 
-1. **Crear viaje** en 3 pasos: datos generales (multidestino, viajeros, presupuesto y moneda), preferencias y restricciones.
-2. **Cargar alternativas** de transporte (con escalas y zona horaria por tramo), alojamiento y actividades. Cada una con partidas de costo: importe, moneda, unidad (total, por persona, por noche, por persona por noche, por día), categoría, fijo/variable/opcional, reembolsable, fuente, fecha de consulta, impuestos y estimado/confirmado. Calculadora de auto con supuestos visibles.
-3. **Comparar escenarios**: tabla lado a lado con total, imprevistos, por persona, por día, desvío contra el presupuesto, ahorro frente a una referencia, confirmado/estimado, pagado/pendiente, por tipo y por categoría; gráfico de composición; recomendación ponderada con explicación en texto y umbral de empate.
-4. **Confirmar mi viaje**: escenario elegido y estado de cada reserva y pago (la app nunca reserva ni paga por su cuenta).
-5. **Itinerario** cronológico y por día: salida de casa calculada hacia atrás, conexiones, check-in/out, actividades encadenadas, alertas (superposición, traslado insuficiente, conexión ajustada, fuera de fechas, llegada antes del check-in), orden manual o por cercanía, notas y aviso cuando un cambio lo afecta.
-6. **Gastos reales** en cualquier moneda, convertidos con la tasa vigente a su fecha: presupuesto vs. estimado vs. real, disponible y desvío por categoría.
-7. **Exportar**: presupuesto CSV, itinerario .ics para el calendario y vista para imprimir o guardar PDF.
-8. **Compartir y demo**: enlace público de solo lectura, viaje de demostración y "Duplicar como mío".
+1. **Viaje nuevo en una frase**: "Bariloche del 10 al 16 de enero, somos 2, salimos de Zárate, presupuesto 1,5 millones". La IA completa el formulario corto y marca en amarillo lo que supuso. También se puede llenar a mano.
+2. **Opciones con capturas y links**: soltás varias capturas de Despegar, Booking, la aerolínea o la empresa de micros (o pegás el link) y cada oferta aparece como una tarjeta tipo pasaje con precio, fechas y horarios. "Uso mi auto" estima distancia, nafta, peajes y horas. Todo se corrige en la tarjeta.
+3. **Tus 3 opciones**: la más barata, la más rápida y la más cómoda, calculadas sobre todas las combinaciones, con el porqué, el costo por persona, el tiempo de viaje puerta a terminal y lo que sobra o falta del presupuesto. "Cambiar algo" ajusta una pieza.
+4. **Confirmar**: estado de cada reserva y pago (la app nunca reserva ni paga por su cuenta).
+5. **Itinerario** puerta a puerta con zonas horarias, alertas, orden manual y aviso cuando un cambio lo afecta.
+6. **Gastos reales** en cualquier moneda, presupuesto vs. estimado vs. real.
+7. **Exportar**: presupuesto CSV, itinerario .ics y vista para imprimir o guardar PDF.
+8. **Compartir y demo**: enlace público de solo lectura con las 3 opciones, viaje de demostración y "Duplicar como mío".
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript estricto · Tailwind CSS 4 · Postgres con Drizzle ORM (PGlite en desarrollo y pruebas) · sesiones firmadas con jose + argon2 · Zod · decimal.js · date-fns-tz · dnd-kit · Vitest · Playwright.
+Next.js 16 (App Router) · API de Claude (lectura de capturas y links) · TypeScript estricto · Tailwind CSS 4 · Postgres con Drizzle ORM (PGlite en desarrollo y pruebas) · sesiones firmadas con jose + argon2 · Zod · decimal.js · date-fns-tz · dnd-kit · Vitest · Playwright.
 
 ```
 src/domain/        lógica pura: dinero, monedas, costos, decisión, itinerario
 src/server/        base de datos, repositorios (aislados por workspace), servicios, acciones, exportación
-src/integrations/  contratos para APIs externas (en el MVP: carga manual)
+src/integrations/  IA (TravelAI real y simulada), lectura segura de links, contratos de APIs externas
 src/app, src/ui    pantallas y componentes
 ```
 
 ## Estado del MVP
 
-### Funciona con datos reales cargados por el usuario
+### Funciona con datos reales
 - Cuentas con código de invitación, espacios de trabajo aislados y sesiones seguras.
-- Viajes, viajeros, paradas, preferencias y restricciones; historial de cambios por viaje.
-- Alternativas y partidas de costo con todos los atributos; calculadora de auto.
-- Motor de costos (centavos enteros, redondeo half-even, conversión explícita sin encadenar, imprevistos, reembolsables, avisos de datos faltantes o viejos).
-- Escenarios, comparador, recomendación con pesos y umbral de empate.
-- Confirmación con estados de reserva y pago.
-- Itinerario con zonas horarias, alertas, reordenamiento y aviso de cambios.
-- Gastos reales y tipos de cambio por fecha.
-- Exportación CSV, .ics y vista de impresión/PDF.
+- Carga rápida: frase del viaje, capturas y links leídos con IA (con `ANTHROPIC_API_KEY`), auto propio estimado, carga a mano.
+- Las 3 propuestas sobre todas las combinaciones, con el motor de costos (centavos enteros, half-even, conversión explícita, imprevistos).
+- Confirmación, itinerario con zonas horarias y alertas, gastos reales, exportación CSV/.ics/PDF.
 - Enlaces públicos de solo lectura y duplicación de viajes.
-- Uso desde el celular (390 px) e instalable como app (PWA), modo claro y oscuro.
+- Uso desde el celular (390 px), instalable como app (PWA), modo claro y oscuro.
 
 ### Usa datos simulados
 - El viaje de demostración Buenos Aires → Bariloche (3 escenarios): todos sus precios llevan la marca "Dato de demostración" y la página muestra "Precios ficticios".
 
 ### Requiere credenciales o servicios externos
 - **Despliegue**: cuenta de GitHub y de Railway (ver `DEPLOY.md`).
-- **Integraciones** (sub-proyecto 5, no incluidas): búsqueda de vuelos y hoteles, tipo de cambio automático, rutas y distancias reales, clima, calendario. El contrato está en `src/integrations/types.ts`; hoy todas responden "Integración no configurada: cargá los datos a mano".
+- **IA**: clave de la API de Claude en `ANTHROPIC_API_KEY` (ver `DEPLOY.md`). Sin clave, todo se carga a mano.
+- **Más adelante**: "Compartir → TravelFlow" en Android, búsqueda automática de vuelos y hoteles, tipo de cambio automático, rutas reales.
 - **Fuera de este ciclo**: mapa logístico, comparación de destinos, división de gastos grupales, documentación con archivos, asistente de IA.

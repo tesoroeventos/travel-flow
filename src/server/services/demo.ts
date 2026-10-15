@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { carCostItems } from "@/domain/costs/car";
 import { zonedToUtc } from "@/domain/time/calendar";
@@ -31,7 +31,10 @@ async function demoCtx(db: Db): Promise<Ctx> {
 }
 
 /** Siembra (una sola vez) el viaje de demostración Buenos Aires → Bariloche con 3 escenarios. */
-export async function seedDemo(db: Db, opts: { shareToken?: string } = {}): Promise<{ tripId: string; shareToken: string }> {
+export async function seedDemo(
+  db: Db,
+  opts: { shareToken?: string } = {},
+): Promise<{ tripId: string; shareToken: string }> {
   const ctx = await demoCtx(db);
   const r = makeRepos(db);
   const existing = (await r.trips.list(ctx)).find((t) => t.isDemo);
@@ -40,48 +43,190 @@ export async function seedDemo(db: Db, opts: { shareToken?: string } = {}): Prom
   const seed = await seedBarilocheA(db, ctx, { isDemo: true });
   const parts = makeScenarioParts(db);
   const tripId = seed.tripId;
-  const common = { tripId, isDemo: true, source: DEMO_SOURCE, consultedAt: "2027-01-01", includesTaxes: true };
-  await r.trips.update(ctx, tripId, { name: "Buenos Aires → Bariloche (demo)", originLabel: "Buenos Aires" });
+  const common = {
+    tripId,
+    isDemo: true,
+    source: DEMO_SOURCE,
+    consultedAt: "2027-01-01",
+    includesTaxes: true,
+  };
+  await r.trips.update(ctx, tripId, {
+    name: "Buenos Aires → Bariloche (demo)",
+    originLabel: "Buenos Aires",
+  });
 
   // Actividades gratuitas, con coordenadas, en todos los escenarios
-  const chico = await r.activities.create(ctx, { tripId, name: "Circuito Chico", address: "Av. Bustillo", date: "2027-01-13", durationMin: 180, lat: -41.06, lng: -71.52 });
-  const otto = await r.activities.create(ctx, { tripId, name: "Cerro Otto (a pie)", address: "Cerro Otto", date: "2027-01-14", durationMin: 240, lat: -41.145, lng: -71.34 });
-  await r.scenarios.update(ctx, seed.scenarioId, { name: "A · Avión + hotel céntrico", description: "Transporte público en destino" });
+  // Gratuitas: no suman a las propuestas (no tienen precio que comparar)
+  const chico = await r.activities.create(ctx, {
+    tripId,
+    name: "Circuito Chico",
+    address: "Av. Bustillo",
+    date: "2027-01-13",
+    durationMin: 180,
+    lat: -41.06,
+    lng: -71.52,
+    inProposals: false,
+  });
+  const otto = await r.activities.create(ctx, {
+    tripId,
+    name: "Cerro Otto (a pie)",
+    address: "Cerro Otto",
+    date: "2027-01-14",
+    durationMin: 240,
+    lat: -41.145,
+    lng: -71.34,
+    inProposals: false,
+  });
+  await r.scenarios.update(ctx, seed.scenarioId, {
+    name: "A · Avión + hotel céntrico",
+    description: "Transporte público en destino",
+  });
   await parts.setRating(ctx, seed.scenarioId, "comfort", 5);
   await parts.setRating(ctx, seed.scenarioId, "lodging_quality", 4);
   await parts.setRating(ctx, seed.scenarioId, "experience", 4);
   for (const a of [chico, otto]) await parts.setSelection(ctx, seed.scenarioId, "activity", a.id, true);
 
   // B · Auto propio + departamento alejado
-  const b = await r.scenarios.create(ctx, { tripId, name: "B · Auto propio + departamento", position: 1 });
+  const b = await r.scenarios.create(ctx, {
+    tripId,
+    name: "B · Auto propio + departamento",
+    position: 1,
+  });
+  const carPair = randomUUID();
   const carOut = await r.transport.create(ctx, {
-    tripId, leg: "outbound", mode: "own_car", provider: "Auto propio", fromLabel: "Buenos Aires", toLabel: "Bariloche",
-    segments: [{ from: "Buenos Aires", to: "Bariloche", departUtc: at("2027-01-09", "06:00"), departTz: BA, arriveUtc: at("2027-01-10", "13:00"), arriveTz: BA }],
-    distanceKm: 1600, comfortRating: 3,
+    tripId,
+    leg: "outbound",
+    mode: "own_car",
+    provider: "Auto propio",
+    fromLabel: "Buenos Aires",
+    toLabel: "Bariloche",
+    segments: [
+      {
+        from: "Buenos Aires",
+        to: "Bariloche",
+        departUtc: at("2027-01-09", "06:00"),
+        departTz: BA,
+        arriveUtc: at("2027-01-10", "13:00"),
+        arriveTz: BA,
+      },
+    ],
+    distanceKm: 1600,
+    comfortRating: 3,
+    pairId: carPair,
+    source: "auto",
   });
   const carBack = await r.transport.create(ctx, {
-    tripId, leg: "return", mode: "own_car", provider: "Auto propio (vuelta)", fromLabel: "Bariloche", toLabel: "Buenos Aires",
-    segments: [{ from: "Bariloche", to: "Buenos Aires", departUtc: at("2027-01-16", "08:00"), departTz: BA, arriveUtc: at("2027-01-17", "12:00"), arriveTz: BA }],
+    tripId,
+    leg: "return",
+    mode: "own_car",
+    provider: "Auto propio (vuelta)",
+    fromLabel: "Bariloche",
+    toLabel: "Buenos Aires",
+    segments: [
+      {
+        from: "Bariloche",
+        to: "Buenos Aires",
+        departUtc: at("2027-01-16", "08:00"),
+        departTz: BA,
+        arriveUtc: at("2027-01-17", "12:00"),
+        arriveTz: BA,
+      },
+    ],
     distanceKm: 1600,
+    comfortRating: 3,
+    pairId: carPair,
+    source: "auto",
   });
   for (const { nights: _n, paymentStatus: _p, ...item } of carCostItems({
-    km: "3200", consumptionLPer100: "8", fuelPriceCents: 120000, currency: "ARS", tollsCents: 2500000, parkingCents: 0,
-    rentalCents: 0, insuranceCents: 0, depositCents: 0, extraKm: "0", extraKmPriceCents: 0, dropOffCents: 0, wearPerKmCents: 1500, leg: "outbound",
+    km: "3200",
+    consumptionLPer100: "8",
+    fuelPriceCents: 120000,
+    currency: "ARS",
+    tollsCents: 2500000,
+    parkingCents: 0,
+    rentalCents: 0,
+    insuranceCents: 0,
+    depositCents: 0,
+    extraKm: "0",
+    extraKmPriceCents: 0,
+    dropOffCents: 0,
+    wearPerKmCents: 1500,
+    leg: "outbound",
   })) {
     void _n;
     void _p;
-    await r.costItems.create(ctx, { ...item, ...common, ownerType: "transport_option", ownerId: carOut.id });
+    await r.costItems.create(ctx, {
+      ...item,
+      ...common,
+      ownerType: "transport_option",
+      ownerId: carOut.id,
+    });
   }
   const depto = await r.lodging.create(ctx, {
-    tripId, kind: "apartment", name: "Departamento Melipal", address: "Av. Bustillo km 6", tz: BA,
-    checkInAt: new Date(at("2027-01-10", "15:00")), checkOutAt: new Date(at("2027-01-16", "10:00")),
-    distanceCenterKm: 6, lat: -41.12, lng: -71.39, amenities: ["kitchen", "parking", "wifi"], qualityRating: 4, flexibleCancellation: true,
+    tripId,
+    kind: "apartment",
+    name: "Departamento Melipal",
+    address: "Av. Bustillo km 6",
+    tz: BA,
+    checkInAt: new Date(at("2027-01-10", "15:00")),
+    checkOutAt: new Date(at("2027-01-16", "10:00")),
+    distanceCenterKm: 6,
+    lat: -41.12,
+    lng: -71.39,
+    amenities: ["kitchen", "parking", "wifi"],
+    qualityRating: 4,
+    flexibleCancellation: true,
   });
-  await r.costItems.create(ctx, { ...common, ownerType: "lodging_option", ownerId: depto.id, label: "Noche", amountCents: 5500000, currency: "ARS", unit: "per_night", category: "lodging" });
-  await r.costItems.create(ctx, { ...common, ownerType: "lodging_option", ownerId: depto.id, label: "Limpieza", amountCents: 3000000, currency: "ARS", unit: "total", category: "lodging" });
-  await r.costItems.create(ctx, { ...common, ownerType: "scenario", ownerId: b.id, label: "Comida (cocinando)", amountCents: 1800000, currency: "ARS", unit: "per_day", category: "food", costType: "variable" });
-  await r.costItems.create(ctx, { ...common, ownerType: "scenario", ownerId: b.id, label: "Nafta en destino", amountCents: 6000000, currency: "ARS", unit: "total", category: "transport_internal", costType: "variable" });
-  for (const [t, id] of [["transport_option", carOut.id], ["transport_option", carBack.id], ["lodging_option", depto.id], ["activity", seed.excursion.id], ["activity", chico.id], ["activity", otto.id]] as const) {
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "lodging_option",
+    ownerId: depto.id,
+    label: "Noche",
+    amountCents: 5500000,
+    currency: "ARS",
+    unit: "per_night",
+    category: "lodging",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "lodging_option",
+    ownerId: depto.id,
+    label: "Limpieza",
+    amountCents: 3000000,
+    currency: "ARS",
+    unit: "total",
+    category: "lodging",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "scenario",
+    ownerId: b.id,
+    label: "Comida (cocinando)",
+    amountCents: 1800000,
+    currency: "ARS",
+    unit: "per_day",
+    category: "food",
+    costType: "variable",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "scenario",
+    ownerId: b.id,
+    label: "Nafta en destino",
+    amountCents: 6000000,
+    currency: "ARS",
+    unit: "total",
+    category: "transport_internal",
+    costType: "variable",
+  });
+  for (const [t, id] of [
+    ["transport_option", carOut.id],
+    ["transport_option", carBack.id],
+    ["lodging_option", depto.id],
+    ["activity", seed.excursion.id],
+    ["activity", chico.id],
+    ["activity", otto.id],
+  ] as const) {
     await parts.setSelection(ctx, b.id, t, id, true);
   }
   await parts.setRating(ctx, b.id, "comfort", 3);
@@ -89,29 +234,138 @@ export async function seedDemo(db: Db, opts: { shareToken?: string } = {}): Prom
   await parts.setRating(ctx, b.id, "experience", 5);
 
   // C · Micro + hostel + traslados puntuales
-  const c = await r.scenarios.create(ctx, { tripId, name: "C · Micro + hostel", position: 2 });
+  const c = await r.scenarios.create(ctx, {
+    tripId,
+    name: "C · Micro + hostel",
+    position: 2,
+  });
   const busOut = await r.transport.create(ctx, {
-    tripId, leg: "outbound", mode: "bus", provider: "Vía Bariloche", serviceNumber: "Cama suite", fromLabel: "Retiro", toLabel: "Terminal Bariloche",
-    segments: [{ from: "Retiro", to: "Bariloche", departUtc: at("2027-01-09", "15:00"), departTz: BA, arriveUtc: at("2027-01-10", "13:30"), arriveTz: BA }],
-    transferToMin: 40, transferFromMin: 20, comfortRating: 2,
+    tripId,
+    leg: "outbound",
+    mode: "bus",
+    provider: "Vía Bariloche",
+    serviceNumber: "Cama suite",
+    fromLabel: "Retiro",
+    toLabel: "Terminal Bariloche",
+    segments: [
+      {
+        from: "Retiro",
+        to: "Bariloche",
+        departUtc: at("2027-01-09", "15:00"),
+        departTz: BA,
+        arriveUtc: at("2027-01-10", "13:30"),
+        arriveTz: BA,
+      },
+    ],
+    transferToMin: 40,
+    transferFromMin: 20,
+    comfortRating: 2,
   });
   const busBack = await r.transport.create(ctx, {
-    tripId, leg: "return", mode: "bus", provider: "Vía Bariloche", serviceNumber: "Cama", fromLabel: "Terminal Bariloche", toLabel: "Retiro",
-    segments: [{ from: "Bariloche", to: "Retiro", departUtc: at("2027-01-16", "14:00"), departTz: BA, arriveUtc: at("2027-01-17", "12:00"), arriveTz: BA }],
-    transferToMin: 20, transferFromMin: 40,
+    tripId,
+    leg: "return",
+    mode: "bus",
+    provider: "Vía Bariloche",
+    serviceNumber: "Cama",
+    fromLabel: "Terminal Bariloche",
+    toLabel: "Retiro",
+    segments: [
+      {
+        from: "Bariloche",
+        to: "Retiro",
+        departUtc: at("2027-01-16", "14:00"),
+        departTz: BA,
+        arriveUtc: at("2027-01-17", "12:00"),
+        arriveTz: BA,
+      },
+    ],
+    transferToMin: 20,
+    transferFromMin: 40,
   });
-  await r.costItems.create(ctx, { ...common, ownerType: "transport_option", ownerId: busOut.id, label: "Pasaje", amountCents: 6000000, currency: "ARS", unit: "per_person", category: "transport_outbound" });
-  await r.costItems.create(ctx, { ...common, ownerType: "transport_option", ownerId: busBack.id, label: "Pasaje", amountCents: 6000000, currency: "ARS", unit: "per_person", category: "transport_return" });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "transport_option",
+    ownerId: busOut.id,
+    label: "Pasaje",
+    amountCents: 6000000,
+    currency: "ARS",
+    unit: "per_person",
+    category: "transport_outbound",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "transport_option",
+    ownerId: busBack.id,
+    label: "Pasaje",
+    amountCents: 6000000,
+    currency: "ARS",
+    unit: "per_person",
+    category: "transport_return",
+  });
   const hostel = await r.lodging.create(ctx, {
-    tripId, kind: "hostel", name: "Hostel del Lago", address: "Moreno 300", tz: BA,
-    checkInAt: new Date(at("2027-01-10", "14:00")), checkOutAt: new Date(at("2027-01-16", "10:00")),
-    distanceCenterKm: 0.8, lat: -41.136, lng: -71.302, amenities: ["breakfast", "wifi"], qualityRating: 3,
+    tripId,
+    kind: "hostel",
+    name: "Hostel del Lago",
+    address: "Moreno 300",
+    tz: BA,
+    checkInAt: new Date(at("2027-01-10", "14:00")),
+    checkOutAt: new Date(at("2027-01-16", "10:00")),
+    distanceCenterKm: 0.8,
+    lat: -41.136,
+    lng: -71.302,
+    amenities: ["breakfast", "wifi"],
+    qualityRating: 3,
   });
-  await r.costItems.create(ctx, { ...common, ownerType: "lodging_option", ownerId: hostel.id, label: "Habitación privada", amountCents: 3000000, currency: "ARS", unit: "per_night", category: "lodging" });
-  await r.costItems.create(ctx, { ...common, ownerType: "scenario", ownerId: c.id, label: "Comida", amountCents: 2500000, currency: "ARS", unit: "per_day", category: "food", costType: "variable" });
-  await r.costItems.create(ctx, { ...common, ownerType: "scenario", ownerId: c.id, label: "Remises a excursiones", amountCents: 1500000, currency: "ARS", unit: "total", quantity: "4", category: "transport_internal" });
-  await r.costItems.create(ctx, { ...common, ownerType: "scenario", ownerId: c.id, label: "Seguro", amountCents: 3000, currency: "USD", unit: "per_person", category: "insurance" });
-  for (const [t, id] of [["transport_option", busOut.id], ["transport_option", busBack.id], ["lodging_option", hostel.id], ["activity", seed.excursion.id], ["activity", chico.id], ["activity", otto.id]] as const) {
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "lodging_option",
+    ownerId: hostel.id,
+    label: "Habitación privada",
+    amountCents: 3000000,
+    currency: "ARS",
+    unit: "per_night",
+    category: "lodging",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "scenario",
+    ownerId: c.id,
+    label: "Comida",
+    amountCents: 2500000,
+    currency: "ARS",
+    unit: "per_day",
+    category: "food",
+    costType: "variable",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "scenario",
+    ownerId: c.id,
+    label: "Remises a excursiones",
+    amountCents: 1500000,
+    currency: "ARS",
+    unit: "total",
+    quantity: "4",
+    category: "transport_internal",
+  });
+  await r.costItems.create(ctx, {
+    ...common,
+    ownerType: "scenario",
+    ownerId: c.id,
+    label: "Seguro",
+    amountCents: 3000,
+    currency: "USD",
+    unit: "per_person",
+    category: "insurance",
+  });
+  for (const [t, id] of [
+    ["transport_option", busOut.id],
+    ["transport_option", busBack.id],
+    ["lodging_option", hostel.id],
+    ["activity", seed.excursion.id],
+    ["activity", chico.id],
+    ["activity", otto.id],
+  ] as const) {
     await parts.setSelection(ctx, c.id, t, id, true);
   }
   await parts.setRating(ctx, c.id, "comfort", 2);
@@ -128,7 +382,10 @@ export async function loadSharedTrip(db: Db, token: string) {
   if (!token) return null;
   const [trip] = await db.select().from(trips).where(eq(trips.publicShareToken, token));
   if (!trip) return null;
-  const readCtx: Ctx = { userId: "00000000-0000-0000-0000-000000000000", workspaceId: trip.workspaceId };
+  const readCtx: Ctx = {
+    userId: "00000000-0000-0000-0000-000000000000",
+    workspaceId: trip.workspaceId,
+  };
   const data = await loadTrip(db, readCtx, trip.id);
   return { data, analysis: analyzeLoaded(data) };
 }
@@ -183,16 +440,71 @@ async function copyTrip(db: Db, srcCtx: Ctx, tripId: string, dstCtx: Ctx, name: 
     referenceScenarioId: null,
   });
   const ids = new Map<string, string>();
-  for (const t of src.travelers) ids.set(t.id, (await r.travelers.create(dstCtx, { ...strip(t), tripId: trip.id } as never)).id);
+  for (const t of src.travelers)
+    ids.set(
+      t.id,
+      (
+        await r.travelers.create(dstCtx, {
+          ...strip(t),
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
   for (const s of src.stops) await r.stops.create(dstCtx, { ...strip(s), tripId: trip.id } as never);
-  for (const o of src.transport) ids.set(o.id, (await r.transport.create(dstCtx, { ...strip(o), tripId: trip.id } as never)).id);
-  for (const o of src.lodging) ids.set(o.id, (await r.lodging.create(dstCtx, { ...strip(o), stopId: null, tripId: trip.id } as never)).id);
-  for (const o of src.activities) ids.set(o.id, (await r.activities.create(dstCtx, { ...strip(o), tripId: trip.id } as never)).id);
-  for (const s of src.scenarios) ids.set(s.id, (await r.scenarios.create(dstCtx, { ...strip(s), tripId: trip.id } as never)).id);
+  for (const o of src.transport)
+    ids.set(
+      o.id,
+      (
+        await r.transport.create(dstCtx, {
+          ...strip(o),
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
+  for (const o of src.lodging)
+    ids.set(
+      o.id,
+      (
+        await r.lodging.create(dstCtx, {
+          ...strip(o),
+          stopId: null,
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
+  for (const o of src.activities)
+    ids.set(
+      o.id,
+      (
+        await r.activities.create(dstCtx, {
+          ...strip(o),
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
+  for (const s of src.scenarios)
+    ids.set(
+      s.id,
+      (
+        await r.scenarios.create(dstCtx, {
+          ...strip(s),
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
   for (const i of src.costItems) {
     const owner = ids.get(i.ownerId);
     if (!owner) continue;
-    ids.set(i.id, (await r.costItems.create(dstCtx, { ...strip(i), ownerId: owner, tripId: trip.id } as never)).id);
+    ids.set(
+      i.id,
+      (
+        await r.costItems.create(dstCtx, {
+          ...strip(i),
+          ownerId: owner,
+          tripId: trip.id,
+        } as never)
+      ).id,
+    );
   }
   for (const s of src.selections) {
     const sc = ids.get(s.scenarioId);
@@ -211,13 +523,18 @@ async function copyTrip(db: Db, srcCtx: Ctx, tripId: string, dstCtx: Ctx, name: 
   for (const w of src.weights) await parts.setWeight(dstCtx, trip.id, w.criterion, w.weight);
   for (const o of src.overrides) {
     const key = o.entryKey.replace(/:([0-9a-f-]{36}):/, (m, id: string) => `:${ids.get(id) ?? id}:`);
-    await parts.setOverride(dstCtx, trip.id, key, { position: o.position, note: o.note });
+    await parts.setOverride(dstCtx, trip.id, key, {
+      position: o.position,
+      note: o.note,
+    });
   }
   // Tipos de cambio que el destino no tenga (si no, los totales quedarían incompletos)
   if (srcCtx.workspaceId !== dstCtx.workspaceId) {
     const mine = await r.rates.list(dstCtx);
     for (const rt of src.rates) {
-      if (!mine.some((m) => m.fromCurrency === rt.fromCurrency && m.toCurrency === rt.toCurrency && m.asOf === rt.asOf)) {
+      if (
+        !mine.some((m) => m.fromCurrency === rt.fromCurrency && m.toCurrency === rt.toCurrency && m.asOf === rt.asOf)
+      ) {
         await r.rates.create(dstCtx, {
           fromCurrency: rt.fromCurrency,
           toCurrency: rt.toCurrency,
@@ -229,8 +546,10 @@ async function copyTrip(db: Db, srcCtx: Ctx, tripId: string, dstCtx: Ctx, name: 
     }
   }
   const patch: Partial<Trip> = {};
-  if (src.trip.chosenScenarioId && ids.get(src.trip.chosenScenarioId)) patch.chosenScenarioId = ids.get(src.trip.chosenScenarioId)!;
-  if (src.trip.referenceScenarioId && ids.get(src.trip.referenceScenarioId)) patch.referenceScenarioId = ids.get(src.trip.referenceScenarioId)!;
+  if (src.trip.chosenScenarioId && ids.get(src.trip.chosenScenarioId))
+    patch.chosenScenarioId = ids.get(src.trip.chosenScenarioId)!;
+  if (src.trip.referenceScenarioId && ids.get(src.trip.referenceScenarioId))
+    patch.referenceScenarioId = ids.get(src.trip.referenceScenarioId)!;
   return Object.keys(patch).length ? r.trips.update(dstCtx, trip.id, patch) : trip;
 }
 

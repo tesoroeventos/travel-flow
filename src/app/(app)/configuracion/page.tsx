@@ -17,18 +17,18 @@ export default async function SettingsPage() {
     <main className="px-4 py-6 md:px-0">
       <h1 className="font-display text-4xl font-bold tracking-tight">Configuración</h1>
 
-      <section className="mt-6 rounded-lg border border-line bg-surface p-4">
+      <section className="mt-6 rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Tu cuenta</h2>
         <p className="mt-1">{user?.name}</p>
         <p className="text-ink-soft">{user?.email}</p>
         <form action={logoutAction} className="mt-4">
-          <button type="submit" className="min-h-11 rounded-md border border-line-strong px-4 font-semibold hover:border-route">
+          <button type="submit" className="min-h-11 rounded-xl border border-line-strong px-4 font-semibold hover:border-route">
             Cerrar sesión
           </button>
         </form>
       </section>
 
-      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+      <section className="mt-4 rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Tipos de cambio</h2>
         <p className="mt-1 max-w-prose text-sm text-ink-soft">
           Se usan para convertir precios y gastos a la moneda de cada viaje. Para cada fecha se toma la tasa más reciente vigente. No se encadenan conversiones.
@@ -64,7 +64,7 @@ export default async function SettingsPage() {
         <RateForm />
       </section>
 
-      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+      <section className="mt-4 rounded-2xl bg-surface shadow-card p-4">
         <h2 className="font-display text-xl font-semibold">Apariencia</h2>
         <ThemeToggle className="-ml-3 mt-1" />
       </section>

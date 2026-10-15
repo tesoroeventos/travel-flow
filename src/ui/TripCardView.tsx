@@ -17,7 +17,7 @@ export function TripCardView({ card }: { card: TripCard }) {
   return (
     <Link
       href={`/viajes/${card.id}`}
-      className="block rounded-lg border border-line bg-surface p-4 hover:border-route focus-visible:border-route"
+      className="block rounded-2xl bg-surface shadow-card p-4 hover:border-route focus-visible:border-route"
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-display text-xl font-semibold leading-tight">{card.name}</h3>

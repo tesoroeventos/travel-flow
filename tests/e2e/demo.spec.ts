@@ -6,10 +6,10 @@ test("la demo pública se ve sin cuenta y se puede duplicar al registrarse", asy
   await page.getByRole("link", { name: "Ver un viaje de ejemplo" }).click();
   await expect(page).toHaveURL(/\/share\/demo-e2e/);
   await expect(page.getByText("Precios ficticios")).toBeVisible();
-  const table = page.getByRole("table", { name: "Comparación de escenarios" });
-  for (const n of ["A · Avión + hotel céntrico", "B · Auto propio + departamento", "C · Micro + hostel"]) {
-    await expect(table.getByRole("columnheader", { name: n })).toBeVisible();
+  for (const n of ["La más barata", "La más rápida", "La más cómoda"]) {
+    await expect(page.getByRole("article", { name: n })).toBeVisible();
   }
+  await expect(page.getByRole("button", { name: "Elegir esta" })).toHaveCount(0);
   await expect(page.getByText("Salir de casa").first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Editar/ })).toHaveCount(0);
   await expectNoHorizontalScroll(page);
@@ -23,13 +23,19 @@ test("la demo pública se ve sin cuenta y se puede duplicar al registrarse", asy
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page).toHaveURL(/\/share\/demo-e2e/);
   await page.getByRole("button", { name: "Duplicar como mío" }).click();
-  await expect(page.getByRole("heading", { name: "Buenos Aires → Bariloche" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Bariloche" })).toBeVisible();
   await expect(page.getByText("Precios ficticios")).toBeVisible();
-  await page.getByRole("link", { name: "Comparador" }).click();
-  await expect(page.getByRole("table", { name: "Comparación de escenarios" }).getByRole("columnheader", { name: "C · Micro + hostel" })).toBeVisible();
+  await page.getByRole("link", { name: "Propuestas" }).click();
+  await expect(page.getByRole("article", { name: "La más barata" })).toBeVisible();
 });
 
 test("un enlace inexistente responde 404", async ({ page }) => {
   const res = await page.goto("/share/no-existe");
   expect(res?.status()).toBe(404);
+});
+
+test("las rutas viejas redirigen a las nuevas", async ({ page }) => {
+  await page.goto("/login");
+  const res = await page.request.get("/viajes/00000000-0000-0000-0000-000000000000/comparador", { maxRedirects: 0 });
+  expect(res.headers()["location"]).toContain("/viajes/00000000-0000-0000-0000-000000000000/propuestas");
 });

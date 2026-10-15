@@ -4,7 +4,7 @@ import { useId } from "react";
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const control =
-  "w-full rounded-md border border-line bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-soft/70 focus:border-route focus:outline-none focus:ring-2 focus:ring-route/30 disabled:opacity-60";
+  "w-full min-h-12 rounded-xl border-[1.5px] border-line bg-surface-2 px-3 py-2.5 text-base text-ink placeholder:text-ink-soft/70 focus:border-route focus:outline-none focus:ring-2 focus:ring-route/25 disabled:opacity-60";
 
 interface FieldShell {
   label: string;
@@ -17,7 +17,7 @@ interface FieldShell {
 function Shell({ id, label, error, hint, className, children }: Omit<FieldShell, "name"> & { id: string; children: ReactNode }) {
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-ink">
+      <label htmlFor={id} className="mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase">
         {label}
       </label>
       {children}

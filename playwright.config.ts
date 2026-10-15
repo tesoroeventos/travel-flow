@@ -23,7 +23,9 @@ export default defineConfig({
       use: {
         ...devices["Pixel 7"],
         viewport: { width: 390, height: 844 },
-        launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+        launchOptions: process.env.CHROMIUM_PATH
+          ? { executablePath: process.env.CHROMIUM_PATH }
+          : {},
       },
     },
   ],
@@ -33,6 +35,7 @@ export default defineConfig({
     timeout: 180_000,
     reuseExistingServer: false,
     env: {
+      AI_FAKE: "1",
       DATABASE_URL: "pglite://./.data/e2e",
       AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret-e2e",
       BOOTSTRAP_INVITE_CODE: E2E_INVITE,
