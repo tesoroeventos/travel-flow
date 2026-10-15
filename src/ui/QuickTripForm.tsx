@@ -6,28 +6,17 @@ import type { FormState } from "@/server/actions/form";
 import { Button, SubmitButton } from "./Button";
 import { Field, SelectField } from "./Field";
 import { Icon } from "./icons";
+import { TZ_OPTIONS } from "./options";
 
 type Values = Record<string, string>;
-type FieldKey =
-  "destination" | "origin" | "startDate" | "endDate" | "travelers" | "budget";
+type FieldKey = "destination" | "origin" | "startDate" | "endDate" | "travelers" | "budget";
 const fmtBudget = (n: number | null) =>
-  n === null
-    ? ""
-    : new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 }).format(n);
+  n === null ? "" : new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 }).format(n);
 
 /** Viaje nuevo: frase que lee la IA o formulario corto. En edición, solo el formulario. */
-export function QuickTripForm({
-  tripId,
-  defaults,
-}: {
-  tripId?: string;
-  defaults?: Values;
-}) {
+export function QuickTripForm({ tripId, defaults }: { tripId?: string; defaults?: Values }) {
   const editing = Boolean(tripId);
-  const [state, action] = useActionState<FormState, FormData>(
-    saveQuickTripAction,
-    {},
-  );
+  const [state, action] = useActionState<FormState, FormData>(saveQuickTripAction, {});
   const [text, setText] = useState("");
   const [values, setValues] = useState<Values>(defaults ?? {});
   const [doubt, setDoubt] = useState<string[]>([]);
@@ -68,9 +57,7 @@ export function QuickTripForm({
       setVersion((v) => v + 1);
       setShowForm(true);
     } catch {
-      setParseError(
-        "No se pudo leer ahora. Probá de nuevo en un rato o usá el formulario.",
-      );
+      setParseError("No se pudo leer ahora. Probá de nuevo en un rato o usá el formulario.");
     } finally {
       setReading(false);
     }
@@ -83,9 +70,7 @@ export function QuickTripForm({
     name: k,
     defaultValue: shown[k] ?? "",
     error: err[k],
-    hint: doubtful(k) ? (
-      <span className="font-semibold text-signal">Revisá este dato</span>
-    ) : undefined,
+    hint: doubtful(k) ? <span className="font-semibold text-signal">Revisá este dato</span> : undefined,
     className: doubtful(k) ? "doubt" : "",
     onInput: () => setDoubt((d) => d.filter((x) => x !== k)),
   });
@@ -94,10 +79,7 @@ export function QuickTripForm({
     <div className="flex flex-col gap-5">
       {!editing ? (
         <div className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-card">
-          <label
-            htmlFor="trip-sentence"
-            className="text-xs font-bold tracking-wider text-ink-soft uppercase"
-          >
+          <label htmlFor="trip-sentence" className="text-xs font-bold tracking-wider text-ink-soft uppercase">
             Tu viaje en una frase
           </label>
           <textarea
@@ -105,8 +87,7 @@ export function QuickTripForm({
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                void readSentence();
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void readSentence();
             }}
             rows={3}
             maxLength={1500}
@@ -144,9 +125,7 @@ export function QuickTripForm({
           {!editing ? (
             <div>
               <h2 className="font-display text-2xl font-bold">
-                {doubt.length || values.destination
-                  ? "Así entendí tu viaje"
-                  : "Tu viaje"}
+                {doubt.length || values.destination ? "Así entendí tu viaje" : "Tu viaje"}
               </h2>
               <p className="text-ink-soft">
                 {doubt.length
@@ -157,30 +136,10 @@ export function QuickTripForm({
           ) : null}
           {tripId ? <input type="hidden" name="tripId" value={tripId} /> : null}
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field
-              label="Destino"
-              autoComplete="off"
-              required
-              {...fieldProps("destination")}
-            />
-            <Field
-              label="Salís desde"
-              autoComplete="off"
-              placeholder="Tu ciudad"
-              {...fieldProps("origin")}
-            />
-            <Field
-              label="Ida"
-              type="date"
-              required
-              {...fieldProps("startDate")}
-            />
-            <Field
-              label="Vuelta"
-              type="date"
-              required
-              {...fieldProps("endDate")}
-            />
+            <Field label="Destino" autoComplete="off" required {...fieldProps("destination")} />
+            <Field label="Salís desde" autoComplete="off" placeholder="Tu ciudad" {...fieldProps("origin")} />
+            <Field label="Ida" type="date" required {...fieldProps("startDate")} />
+            <Field label="Vuelta" type="date" required {...fieldProps("endDate")} />
             <Field
               label="Personas"
               type="number"
@@ -206,6 +165,28 @@ export function QuickTripForm({
               ]}
             />
           </div>
+          <details
+            className="rounded-xl border border-line px-3 py-2"
+            open={Boolean(shown.endTz && shown.endTz !== shown.tz)}
+          >
+            <summary className="min-h-10 cursor-pointer content-center font-semibold text-ink-soft">
+              Zonas horarias
+            </summary>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <SelectField
+                label="Zona horaria de salida"
+                name="tz"
+                defaultValue={shown.tz ?? "America/Argentina/Buenos_Aires"}
+                options={TZ_OPTIONS}
+              />
+              <SelectField
+                label="Zona horaria del lugar que visitás"
+                name="endTz"
+                defaultValue={shown.endTz ?? shown.tz ?? "America/Argentina/Buenos_Aires"}
+                options={TZ_OPTIONS}
+              />
+            </div>
+          </details>
           {state.message ? (
             <p className="font-semibold text-alert" role="alert">
               {state.message}

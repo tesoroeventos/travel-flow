@@ -1,14 +1,10 @@
 import type { ProposalTag } from "@/domain/decision/proposals";
 
-export type SwapMap = Partial<
-  Record<ProposalTag, { plan: number; lodging: number }>
->;
+export type SwapMap = Partial<Record<ProposalTag, { plan: number; lodging: number }>>;
 const TAGS: ProposalTag[] = ["barata", "rapida", "comoda"];
 
 /** Lee ?barata=plan,alojamiento de la URL. Descarta lo que no sean dos enteros no negativos. */
-export function parseSwaps(
-  sp: Record<string, string | string[] | undefined>,
-): SwapMap {
+export function parseSwaps(sp: Record<string, string | string[] | undefined>): SwapMap {
   const out: SwapMap = {};
   for (const tag of TAGS) {
     const raw = sp[tag];

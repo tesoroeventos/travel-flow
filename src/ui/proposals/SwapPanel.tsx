@@ -6,10 +6,8 @@ import { useState } from "react";
 import type { ProposalTag } from "@/domain/decision/proposals";
 import { swapHref } from "./swaps";
 
-const select =
-  "min-h-12 w-full rounded-xl border-[1.5px] border-line bg-surface-2 px-3";
-const label =
-  "mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase";
+const select = "min-h-12 w-full rounded-xl border-[1.5px] border-line bg-surface-2 px-3";
+const label = "mb-1.5 block text-xs font-bold tracking-wider text-ink-soft uppercase";
 
 /** "Cambiar algo": elige otro transporte u otro alojamiento para una tarjeta. El ajuste vive en la URL. */
 export function SwapPanel({
@@ -52,12 +50,7 @@ export function SwapPanel({
               ·
             </span>
             <Link
-              href={swapHref(
-                path,
-                new URLSearchParams(sp.toString()),
-                tag,
-                null,
-              )}
+              href={swapHref(path, new URLSearchParams(sp.toString()), tag, null)}
               scroll={false}
               replace
               className="min-h-11 content-center font-bold text-route underline underline-offset-4"

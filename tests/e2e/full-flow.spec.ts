@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { addActivity, addLodging, addScenario, addTransport, createBarilocheTrip, expectNoHorizontalScroll, registerUser } from "./helpers";
+import {
+  addActivity,
+  addLodging,
+  addScenario,
+  addTransport,
+  createBarilocheTrip,
+  expectNoHorizontalScroll,
+  registerUser,
+} from "./helpers";
 
 test("flujo completo en el celular: de la idea al itinerario y los gastos", async ({ page }) => {
   test.setTimeout(300_000);
@@ -8,16 +16,72 @@ test("flujo completo en el celular: de la idea al itinerario y los gastos", asyn
   const trip = page.url();
   await expectNoHorizontalScroll(page);
 
-  await addTransport(page, trip, { leg: "outbound", mode: "flight", provider: "Vuelo ida", from: "AEP", to: "BRC", date: "2027-01-10", departs: "10:00", arrives: "12:20", price: "120.000", transferTo: "45", transferFrom: "30" });
-  await addTransport(page, trip, { leg: "return", mode: "flight", provider: "Vuelo vuelta", from: "BRC", to: "AEP", date: "2027-01-16", departs: "17:00", arrives: "19:10", price: "110.000", transferTo: "30", transferFrom: "40" });
-  await addTransport(page, trip, { leg: "outbound", mode: "bus", provider: "Micro ida", from: "Retiro", to: "Bariloche", date: "2027-01-09", departs: "20:00", arriveDate: "2027-01-10", arrives: "18:00", price: "60.000" });
-  await addTransport(page, trip, { leg: "return", mode: "bus", provider: "Micro vuelta", from: "Bariloche", to: "Retiro", date: "2027-01-16", departs: "12:00", arriveDate: "2027-01-17", arrives: "10:00", price: "60.000" });
+  await addTransport(page, trip, {
+    leg: "outbound",
+    mode: "flight",
+    provider: "Vuelo ida",
+    from: "AEP",
+    to: "BRC",
+    date: "2027-01-10",
+    departs: "10:00",
+    arrives: "12:20",
+    price: "120.000",
+    transferTo: "45",
+    transferFrom: "30",
+  });
+  await addTransport(page, trip, {
+    leg: "return",
+    mode: "flight",
+    provider: "Vuelo vuelta",
+    from: "BRC",
+    to: "AEP",
+    date: "2027-01-16",
+    departs: "17:00",
+    arrives: "19:10",
+    price: "110.000",
+    transferTo: "30",
+    transferFrom: "40",
+  });
+  await addTransport(page, trip, {
+    leg: "outbound",
+    mode: "bus",
+    provider: "Micro ida",
+    from: "Retiro",
+    to: "Bariloche",
+    date: "2027-01-09",
+    departs: "20:00",
+    arriveDate: "2027-01-10",
+    arrives: "18:00",
+    price: "60.000",
+  });
+  await addTransport(page, trip, {
+    leg: "return",
+    mode: "bus",
+    provider: "Micro vuelta",
+    from: "Bariloche",
+    to: "Retiro",
+    date: "2027-01-16",
+    departs: "12:00",
+    arriveDate: "2027-01-17",
+    arrives: "10:00",
+    price: "60.000",
+  });
   await expectNoHorizontalScroll(page);
   await addLodging(page, trip, "Hotel Centro", "80.000");
   await addLodging(page, trip, "Hostel Lago", "30.000");
   await expectNoHorizontalScroll(page);
-  await addActivity(page, trip, { name: "Cerro Catedral", date: "2027-01-12", time: "10:00", duration: "240", price: "40.000" });
-  await addActivity(page, trip, { name: "Circuito Chico", date: "2027-01-13", duration: "180" });
+  await addActivity(page, trip, {
+    name: "Cerro Catedral",
+    date: "2027-01-12",
+    time: "10:00",
+    duration: "240",
+    price: "40.000",
+  });
+  await addActivity(page, trip, {
+    name: "Circuito Chico",
+    date: "2027-01-13",
+    duration: "180",
+  });
   await expectNoHorizontalScroll(page);
 
   await addScenario(page, trip, "A", ["Vuelo ida", "Vuelo vuelta", "Hotel Centro", "Cerro Catedral", "Circuito Chico"]);
@@ -44,7 +108,9 @@ test("flujo completo en el celular: de la idea al itinerario y los gastos", asyn
   await form.getByLabel("Descripción").fill("Cena");
   await form.getByLabel("Importe").fill("35.000");
   await form.getByRole("button", { name: "Guardar gasto" }).click();
-  await expect(page.getByRole("region", { name: "Resumen de gastos" }).getByText("Gastado").locator("..")).toContainText("$ 35.000,00");
+  await expect(
+    page.getByRole("region", { name: "Resumen de gastos" }).getByText("Gastado").locator(".."),
+  ).toContainText("$ 35.000,00");
   await expectNoHorizontalScroll(page);
 
   const csv = await page.request.get(`${trip}/exportar/presupuesto.csv`);

@@ -2,13 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createTestDb } from "../db/test-db";
 import { makeCtx } from "./demo-data";
 import { loadTrip } from "./load-trip";
-import {
-  createQuickTrip,
-  quickTripSchema,
-  toTripForm,
-  tripContext,
-  updateQuickTrip,
-} from "./quick-trip";
+import { createQuickTrip, quickTripSchema, toTripForm, tripContext, updateQuickTrip } from "./quick-trip";
 
 const base = {
   destination: "Bariloche",
@@ -24,15 +18,11 @@ describe("viaje rápido", () => {
   it("rechaza la vuelta antes de la ida", () => {
     const r = quickTripSchema.safeParse({ ...base, endDate: "2027-01-09" });
     expect(r.success).toBe(false);
-    expect(r.error!.issues.map((i) => i.message)).toContain(
-      "La vuelta tiene que ser después de la ida",
-    );
+    expect(r.error!.issues.map((i) => i.message)).toContain("La vuelta tiene que ser después de la ida");
   });
 
   it("acepta un viaje de un día y presupuesto vacío", () => {
-    expect(
-      quickTripSchema.parse({ ...base, endDate: "2027-01-10", budget: "" }),
-    ).toMatchObject({
+    expect(quickTripSchema.parse({ ...base, endDate: "2027-01-10", budget: "" })).toMatchObject({
       startDate: "2027-01-10",
       endDate: "2027-01-10",
       budget: null,
@@ -48,11 +38,7 @@ describe("viaje rápido", () => {
     });
     const msgs = r.error!.issues.map((i) => i.message);
     expect(msgs).toEqual(
-      expect.arrayContaining([
-        "Falta el destino",
-        "Falta la fecha de ida",
-        "Entre 1 y 20 personas",
-      ]),
+      expect.arrayContaining(["Falta el destino", "Falta la fecha de ida", "Entre 1 y 20 personas"]),
     );
   });
 
@@ -69,10 +55,25 @@ describe("viaje rápido", () => {
       baseCurrency: "ARS",
       startTz: "America/Argentina/Buenos_Aires",
     });
-    expect(
-      toTripForm(quickTripSchema.parse({ ...base, budget: "", origin: "" }))
-        .trip,
-    ).toMatchObject({ budgetCents: 0, originLabel: "" });
+    expect(toTripForm(quickTripSchema.parse({ ...base, budget: "", origin: "" })).trip).toMatchObject({
+      budgetCents: 0,
+      originLabel: "",
+    });
+  });
+
+  it("zonas horarias de salida y destino editables", () => {
+    const f = toTripForm(
+      quickTripSchema.parse({
+        ...base,
+        tz: "America/Argentina/Buenos_Aires",
+        endTz: "Europe/Madrid",
+      }),
+    );
+    expect(f.trip).toMatchObject({
+      startTz: "America/Argentina/Buenos_Aires",
+      endTz: "Europe/Madrid",
+    });
+    expect(f.trip.endAt.toISOString()).toBe("2027-01-16T22:59:00.000Z");
   });
 
   it("crea y actualiza el viaje; el contexto para la IA cuenta los viajeros", async () => {
@@ -89,12 +90,7 @@ describe("viaje rápido", () => {
       travelers: 2,
       today: "2026-10-15",
     });
-    await updateQuickTrip(
-      db,
-      ctx,
-      trip.id,
-      quickTripSchema.parse({ ...base, origin: "", travelers: "3" }),
-    );
+    await updateQuickTrip(db, ctx, trip.id, quickTripSchema.parse({ ...base, origin: "", travelers: "3" }));
     data = await loadTrip(db, ctx, trip.id);
     expect(data.travelers).toHaveLength(3);
     expect(tripContext(data, "2026-10-15").origin).toBeNull();

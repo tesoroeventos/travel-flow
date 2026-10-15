@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { createBarilocheTrip, registerUser } from "./helpers";
+import { createQuickTrip, registerUser } from "./helpers";
 
 test("tipo de cambio y gastos reales con disponible", async ({ page }) => {
   await registerUser(page);
-  await createBarilocheTrip(page);
-  const trip = page.url();
+  const trip = await createQuickTrip(page);
 
   await page.goto("/configuracion");
   const rateForm = page.getByRole("form", { name: "Nuevo tipo de cambio" });
