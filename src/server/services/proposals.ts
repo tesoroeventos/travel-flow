@@ -47,7 +47,10 @@ export interface ProposalView extends ProposalCard {
 }
 
 export interface ProposalsResult {
+  /** Lo que impide comparar (falta ida, vuelta o alojamiento). */
   missing: string[];
+  /** Lo que no impide comparar pero queda afuera hasta completarlo (precios, dólar). */
+  pending: string[];
   needsUsdRate: boolean;
   comboCount: number;
   cards: ProposalView[];
@@ -152,7 +155,7 @@ export function proposalsFromLoaded(data: LoadedTrip, opts: { today?: string; sw
     ...data.lodging.filter((l) => !pricedOther("lodging_option", l.id)).map((l) => l.name),
     ...ex0.activities.filter((a) => !pricedOther("activity", a.id)).map((a) => a.name),
   ];
-  for (const n of new Set(unpriced)) missing.push(`el precio de “${n}”`);
+  const pending = [...new Set(unpriced)].map((n) => `el precio de “${n}”`);
 
   const itemsOf = (type: PieceOwner, id: string): CostItemInput[] =>
     data.costItems.filter((i) => i.ownerType === type && i.ownerId === id).map((i) => toCostInput(data, i));
@@ -203,8 +206,9 @@ export function proposalsFromLoaded(data: LoadedTrip, opts: { today?: string; sw
 
   const all = buildCombos(plans, lodgings, costOf);
   const needsUsdRate = [...summaries.values()].some((s) =>
-    s.warnings.some((w) => w.code === "missing_exchange_rate" && (w.detail ?? "").startsWith("USD")),
+    s.warnings.some((w) => w.code === "missing_exchange_rate" && (w.detail ?? "").includes("USD")),
   );
+  if (needsUsdRate) pending.push("a cuánto tomás el dólar");
   const picked = missing.length ? [] : pickProposals(all);
   const byTag = (tag: ProposalTag) => picked.find((p) => p.tags.includes(tag))?.combo;
 
@@ -304,6 +308,7 @@ export function proposalsFromLoaded(data: LoadedTrip, opts: { today?: string; sw
 
   return {
     missing,
+    pending,
     needsUsdRate,
     comboCount: all.filter((c) => c.costCents !== null).length,
     cards,

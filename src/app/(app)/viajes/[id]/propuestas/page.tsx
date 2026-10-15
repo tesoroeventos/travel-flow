@@ -39,7 +39,7 @@ export default async function ProposalsPage({ params, searchParams }: PageProps<
     swaps: parseSwaps(await searchParams),
   });
   const cur = data.trip.baseCurrency;
-  const missing = [...res.missing, ...(res.needsUsdRate ? ["a cuánto tomás el dólar"] : [])];
+  const missing = res.missing.length || !res.cards.length ? [...res.missing, ...res.pending] : [];
 
   if (missing.length || !res.cards.length) {
     return (
@@ -85,6 +85,14 @@ export default async function ProposalsPage({ params, searchParams }: PageProps<
           {plural(data.travelers.length, "persona", "personas")} · {plural(nights, "noche", "noches")}
         </p>
       </div>
+      {res.pending.length ? (
+        <Note tone="warn">
+          Quedan afuera de la comparación hasta que cargues {res.pending.join(", ")}.{" "}
+          <Link href={`/viajes/${id}/opciones`} className="font-bold underline underline-offset-2">
+            Completar en Opciones
+          </Link>
+        </Note>
+      ) : null}
       {res.cards.map((v) => (
         <ProposalCard
           key={v.tags.join("-")}

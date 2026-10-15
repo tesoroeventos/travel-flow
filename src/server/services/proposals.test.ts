@@ -6,10 +6,11 @@ import { makeRepos } from "../repos";
 import { makeCtx } from "./demo-data";
 import { loadTrip } from "./load-trip";
 import { chooseProposal, PROPOSAL_MARK, proposalsFromLoaded } from "./proposals";
+import { setUsdRate } from "./offers";
 
 const TODAY = "2026-10-15";
 
-async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean } = {}) {
+async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean; base?: "ARS" | "USD" } = {}) {
   const r = makeRepos(db);
   const trip = await r.trips.create(ctx, {
     name: "Bariloche",
@@ -19,7 +20,7 @@ async function seed(db: Db, ctx: Ctx, opts: { noLodging?: boolean } = {}) {
     startTz: "America/Argentina/Buenos_Aires",
     endAt: new Date("2027-01-17T02:59:00Z"),
     endTz: "America/Argentina/Buenos_Aires",
-    baseCurrency: "ARS",
+    baseCurrency: opts.base ?? "ARS",
     budgetCents: 150_000_000,
   });
   const tripId = trip.id;
@@ -190,6 +191,58 @@ describe("propuestas del viaje", () => {
     });
     expect(res.needsUsdRate).toBe(true);
     expect(res.cards).toEqual([]);
+  });
+
+  it("una opción sin precio no bloquea: las combinaciones completas compiten y se avisa lo que falta", async () => {
+    const s = await seed(db, ctx);
+    await makeRepos(db).lodging.create(ctx, {
+      tripId: s.tripId,
+      name: "Cabaña",
+      checkInAt: new Date("2027-01-10T17:00:00Z"),
+      checkOutAt: new Date("2027-01-16T13:00:00Z"),
+      tz: "America/Argentina/Buenos_Aires",
+    });
+    const res = proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY });
+    expect(res.missing).toEqual([]);
+    expect(res.pending).toEqual(["el precio de “Cabaña”"]);
+    expect(res.cards.map((c) => c.costCents)).toEqual([50_800_000, 72_800_000, 102_800_000]);
+  });
+
+  it("un alojamiento en USD sin dólar no bloquea a los demás y pide el dólar", async () => {
+    const s = await seed(db, ctx);
+    const r = makeRepos(db);
+    const l = await r.lodging.create(ctx, {
+      tripId: s.tripId,
+      name: "Airbnb",
+      checkInAt: new Date("2027-01-10T17:00:00Z"),
+      checkOutAt: new Date("2027-01-16T13:00:00Z"),
+      tz: "America/Argentina/Buenos_Aires",
+    });
+    await r.costItems.create(ctx, {
+      tripId: s.tripId,
+      ownerType: "lodging_option",
+      ownerId: l.id,
+      label: "Airbnb",
+      amountCents: 50_000,
+      currency: "USD",
+      unit: "per_night",
+      category: "lodging",
+    });
+    const res = proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY });
+    expect(res.needsUsdRate).toBe(true);
+    expect(res.pending).toContain("a cuánto tomás el dólar");
+    expect(res.cards).toHaveLength(3);
+  });
+
+  it("viaje en dólares con ofertas en pesos pide el dólar y, con él, compara", async () => {
+    const s = await seed(db, ctx, { base: "USD" });
+    const before = proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY });
+    expect(before.needsUsdRate).toBe(true);
+    expect(before.cards).toEqual([]);
+    await setUsdRate(db, ctx, s.tripId, 1000, TODAY);
+    const after = proposalsFromLoaded(await loadTrip(db, ctx, s.tripId), { today: TODAY });
+    expect(after.needsUsdRate).toBe(false);
+    expect(after.cards[0]!.costCents).toBe(50_800);
   });
 
   it("elegir dos veces deja un solo escenario de propuesta y es el elegido", async () => {

@@ -10,8 +10,6 @@ export default async function OptionsPage({ params }: PageProps<"/viajes/[id]/op
   const { data } = await getTripData(id);
   const cards = offerCardsFromLoaded(data);
   const p = proposalsFromLoaded(data);
-  const missing = [...p.missing];
-  if (p.needsUsdRate) missing.push("a cuánto tomás el dólar");
   return (
     <main className="mx-auto max-w-3xl px-4 py-5 md:px-0">
       <h2 className="sr-only">Opciones</h2>
@@ -19,8 +17,9 @@ export default async function OptionsPage({ params }: PageProps<"/viajes/[id]/op
         tripId={id}
         cards={cards}
         status={{
-          missing,
-          comboCount: p.needsUsdRate ? 0 : p.comboCount,
+          missing: p.missing,
+          pending: p.pending,
+          comboCount: p.comboCount,
           needsUsdRate: p.needsUsdRate,
         }}
         hasOrigin={Boolean(data.trip.originLabel.trim())}

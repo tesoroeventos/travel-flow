@@ -23,7 +23,10 @@ import { createLimiter } from "./queue";
 import { shrinkImage } from "./resize";
 
 export interface BoardStatus {
+  /** Lo que impide comparar. */
   missing: string[];
+  /** Lo que queda afuera de la comparación hasta completarlo. */
+  pending: string[];
   comboCount: number;
   needsUsdRate: boolean;
 }
@@ -621,9 +624,10 @@ export function OptionsBoard({
               <>
                 <b>Listo.</b> {status.comboCount}{" "}
                 {status.comboCount === 1 ? "combinación posible." : "combinaciones posibles."}
+                {status.pending.length ? ` Queda afuera hasta que cargues ${status.pending.join(", ")}.` : ""}
               </>
             ) : (
-              `Para comparar falta ${status.missing.join(", ")}.`
+              `Para comparar falta ${[...status.missing, ...status.pending].join(", ")}.`
             )}
           </p>
           {ready ? (

@@ -805,10 +805,10 @@ export async function setInProposals(
 export async function setUsdRate(db: Db, ctx: Ctx, tripId: string, perUsd: number, day: string): Promise<void> {
   const r = makeRepos(db);
   const trip = await r.trips.require(ctx, tripId);
-  if (trip.baseCurrency === "USD") return;
+  // Siempre USD→pesos: si el viaje está en dólares, el motor usa la inversa para pasar los pesos a dólares.
   await r.rates.create(ctx, {
     fromCurrency: "USD",
-    toCurrency: trip.baseCurrency,
+    toCurrency: trip.baseCurrency === "USD" ? "ARS" : trip.baseCurrency,
     rate: String(perUsd),
     asOf: day,
     source: "Ingresado por vos",
