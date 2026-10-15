@@ -41,3 +41,11 @@ export function fmtDuration(min: number): string {
 }
 
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** Tasa decimal guardada ("1000.5000000000") en formato local ("1.000,50"); al menos 2 decimales si los tiene. */
+export function fmtRate(rate: string): string {
+  const [i = "0", rawDec = ""] = rate.split(".");
+  const dec = rawDec.replace(/0+$/, "");
+  const int = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return dec ? `${int},${dec.padEnd(2, "0")}` : int;
+}

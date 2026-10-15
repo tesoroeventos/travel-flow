@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fmtAmount, fmtDuration, fmtMoney, fmtRange, plural } from "./format";
+import { fmtAmount, fmtDuration, fmtMoney, fmtRange, fmtRate, plural } from "./format";
 
 describe("formatos de la interfaz", () => {
   it("dinero", () => {
@@ -19,5 +19,13 @@ describe("formatos de la interfaz", () => {
     expect(fmtDuration(45)).toBe("45 min");
     expect(plural(1, "viajero", "viajeros")).toBe("1 viajero");
     expect(plural(2, "viajero", "viajeros")).toBe("2 viajeros");
+  });
+});
+
+describe("fmtRate", () => {
+  it("formatea tasas guardadas con escala", () => {
+    expect(fmtRate("1000.5000000000")).toBe("1.000,50");
+    expect(fmtRate("0.0012500000")).toBe("0,00125");
+    expect(fmtRate("900.0000000000")).toBe("900");
   });
 });
