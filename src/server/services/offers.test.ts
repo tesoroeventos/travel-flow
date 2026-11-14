@@ -365,3 +365,63 @@ describe("ofertas", () => {
     expect(offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!.inProposals).toBe(false);
   });
 });
+
+describe("ofertas de la búsqueda automática", () => {
+  let db: Db;
+  let ctx: Ctx;
+  let tripId: string;
+  const src = {
+    kind: "busqueda" as const,
+    provider: "Google Flights",
+    url: "https://www.google.com/travel/flights?q=x",
+    consultedAt: "2026-11-14T19:05:00Z",
+  };
+  beforeEach(async () => {
+    db = await createTestDb();
+    ctx = await makeCtx(db);
+    const t = await makeRepos(db).trips.create(ctx, {
+      name: "Bariloche",
+      originLabel: "Zárate",
+      destinationLabel: "Bariloche",
+      startAt: new Date("2027-01-10T03:00:00Z"),
+      startTz: TZ,
+      endAt: new Date("2027-01-17T02:59:00Z"),
+      endTz: TZ,
+      baseCurrency: "ARS",
+      budgetCents: 0,
+    });
+    tripId = t.id;
+  });
+
+  it("saveOffers con fuente busqueda guarda url, source y rótulo con hora", async () => {
+    const r = makeRepos(db);
+    const [saved] = await saveOffers(
+      db,
+      ctx,
+      tripId,
+      [draft({ direction: "ida_y_vuelta", depart: "2027-01-10T18:20", arrive: "2027-01-10T20:45" })],
+      src,
+    );
+    const t = await r.transport.require(ctx, saved!.id);
+    expect([t.source, t.url]).toEqual(["busqueda", "https://www.google.com/travel/flights?q=x"]);
+    const items = await r.costItems.list(ctx, tripId);
+    expect(items[0]!.source).toBe("Google Flights · 14/11 16:05");
+  });
+
+  it("editar una oferta importada la marca como busqueda_editada", async () => {
+    const r = makeRepos(db);
+    const [saved] = await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta" })], src);
+    await updateOffer(db, ctx, { ownerType: "transport_option", id: saved!.id }, { price: 250000 });
+    expect((await r.transport.require(ctx, saved!.id)).source).toBe("busqueda_editada");
+  });
+
+  it("editar una importada de forma que se vuelve a guardar también la marca", async () => {
+    const r = makeRepos(db);
+    const [saved] = await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta" })], src);
+    await updateOffer(db, ctx, { ownerType: "transport_option", id: saved!.id }, { direction: "ida" });
+    const all = (await loadTrip(db, ctx, tripId)).transport;
+    expect(all.map((t) => t.source)).toEqual(["busqueda_editada"]);
+    expect(all[0]!.url).toBeNull();
+    expect(r).toBeDefined();
+  });
+});
