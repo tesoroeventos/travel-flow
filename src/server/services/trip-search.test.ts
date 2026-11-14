@@ -11,7 +11,7 @@ import { makeCtx } from "./demo-data";
 import { loadTrip } from "./load-trip";
 import { updateOffer } from "./offers";
 import { proposalsFromLoaded } from "./proposals";
-import { getTripSearch, runTripSearch } from "./trip-search";
+import { fillReturnFlights, getTripSearch, runTripSearch } from "./trip-search";
 
 const TZ = "America/Argentina/Buenos_Aires";
 const now = new Date("2026-11-14T19:05:00Z");
@@ -200,5 +200,72 @@ describe("runTripSearch", () => {
     const names = (await loadTrip(db, ctx, tripId)).lodging.map((l) => l.name);
     expect(names).not.toContain("Lagos del Sur");
     expect(names).toContain("Nahuel Departamentos");
+  });
+});
+
+describe("fillReturnFlights", () => {
+  let db: Db;
+  let ctx: Ctx;
+  beforeEach(async () => {
+    db = await createTestDb();
+    ctx = await makeCtx(db);
+  });
+
+  async function chooseCheapest(tripId: string) {
+    const data = await loadTrip(db, ctx, tripId);
+    const out = data.transport.find((t) => t.serviceNumber === "AR 1682" && t.leg === "outbound")!;
+    await makeRepos(db).bookings.create(ctx, { tripId, ownerType: "transport_option", ownerId: out.id });
+    return out;
+  }
+
+  it("al elegir completa la vuelta con un solo pedido", async () => {
+    const tripId = await makeTrip(db, ctx);
+    await runTripSearch(db, ctx, tripId, counting(), { now });
+    const out = await chooseCheapest(tripId);
+    const c = counting();
+    expect(await fillReturnFlights(db, ctx, tripId, c)).toEqual({ filled: 1, failed: 0 });
+    expect(c.calls).toBe(1);
+    const back = (await loadTrip(db, ctx, tripId)).transport.find((t) => t.pairId === out.pairId && t.leg === "return")!;
+    expect(back.segments).toEqual([
+      {
+        from: "BRC",
+        to: "EZE",
+        departUtc: "2027-01-16T21:20:00.000Z",
+        departTz: TZ,
+        arriveUtc: "2027-01-16T23:45:00.000Z",
+        arriveTz: TZ,
+      },
+    ]);
+    expect(back.serviceNumber).toBe("AR 1682");
+  });
+
+  it("si falla deja la nota y no rompe", async () => {
+    const tripId = await makeTrip(db, ctx);
+    await runTripSearch(db, ctx, tripId, counting(), { now });
+    const out = await chooseCheapest(tripId);
+    const down: TravelSearch = { ...fakeTravelSearch, returnFlights: async () => err("unavailable", "x") };
+    expect(await fillReturnFlights(db, ctx, tripId, down)).toEqual({ filled: 0, failed: 1 });
+    await fillReturnFlights(db, ctx, tripId, down);
+    const back = (await loadTrip(db, ctx, tripId)).transport.find((t) => t.pairId === out.pairId && t.leg === "return")!;
+    expect(back.segments).toEqual([]);
+    expect(back.notes?.match(/Vuelta: confirmala en Google Flights\./g)).toHaveLength(1);
+  });
+
+  it("no vuelve a pedir una vuelta ya completa", async () => {
+    const tripId = await makeTrip(db, ctx);
+    await runTripSearch(db, ctx, tripId, counting(), { now });
+    await chooseCheapest(tripId);
+    await fillReturnFlights(db, ctx, tripId, counting());
+    const c = counting();
+    expect(await fillReturnFlights(db, ctx, tripId, c)).toEqual({ filled: 0, failed: 0 });
+    expect(c.calls).toBe(0);
+  });
+
+  it("sin ofertas elegidas de la búsqueda no hace nada", async () => {
+    const tripId = await makeTrip(db, ctx);
+    await runTripSearch(db, ctx, tripId, counting(), { now });
+    const c = counting();
+    expect(await fillReturnFlights(db, ctx, tripId, c)).toEqual({ filled: 0, failed: 0 });
+    expect(c.calls).toBe(0);
   });
 });

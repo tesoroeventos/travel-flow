@@ -2,10 +2,12 @@ import { eq } from "drizzle-orm";
 import { err, ok, type Result } from "@/domain/result";
 import { buildRadarQuery, type RadarQuery } from "@/domain/radar/query";
 import { findAirport } from "@/domain/search/airports";
+import { zonedToUtc } from "@/domain/time/calendar";
 import { RADAR_MESSAGES } from "@/integrations/radar/messages";
 import { findSite } from "@/integrations/radar/sites";
 import { SEARCH_MESSAGES } from "@/integrations/search/messages";
 import {
+  chooseReturn,
   flightToDraft,
   lodgingExtras,
   lodgingToDraft,
@@ -221,4 +223,64 @@ export async function runTripSearch(
     .onConflictDoUpdate({ target: tripSearches.tripId, set: row });
 
   return ok({ flights, lodging, missingAirlines, searchedAt: consultedAt, skipped: false, messages });
+}
+
+/** "YYYY-MM-DD HH:MM" en la zona dada → ISO UTC. */
+const utc = (local: string, tz: string) => zonedToUtc(local.slice(0, 10), local.slice(11, 16), tz);
+
+/**
+ * Después de elegir una propuesta: pide la vuelta de cada vuelo elegido que vino de la búsqueda
+ * y completa sus horarios. Un error no corta nada: deja una nota en la vuelta.
+ */
+export async function fillReturnFlights(
+  db: Db,
+  ctx: Ctx,
+  tripId: string,
+  search: TravelSearch,
+): Promise<{ filled: number; failed: number }> {
+  const r = makeRepos(db);
+  const trip = await r.trips.require(ctx, tripId);
+  const [bookings, transport] = await Promise.all([r.bookings.list(ctx, tripId), r.transport.list(ctx, tripId)]);
+  const booked = new Set(bookings.filter((b) => b.ownerType === "transport_option").map((b) => b.ownerId));
+  const pending = transport
+    .filter((t) => t.leg === "outbound" && t.externalRef && t.pairId && booked.has(t.id))
+    .map((t) => ({
+      token: t.externalRef!,
+      back: transport.find((x) => x.pairId === t.pairId && x.leg === "return" && x.segments.length === 0),
+    }))
+    .filter((x): x is { token: string; back: (typeof transport)[number] } => x.back !== undefined);
+  if (pending.length === 0 || !trip.originIata || !trip.destinationIata) return { filled: 0, failed: 0 };
+
+  const q = buildRadarQuery(trip, await r.travelers.list(ctx, tripId));
+  const fq = flightQueryFor(q, searchCurrency(trip.baseCurrency));
+  let filled = 0;
+  let failed = 0;
+  for (const { token, back } of pending) {
+    const res = await search.returnFlights(fq, token);
+    const option = res.ok ? chooseReturn(res.data) : null;
+    if (!option) {
+      failed++;
+      const notes = back.notes ?? "";
+      if (!notes.includes(SEARCH_MESSAGES.return_failed)) {
+        await r.transport.update(ctx, back.id, {
+          notes: notes ? `${notes}\n${SEARCH_MESSAGES.return_failed}` : SEARCH_MESSAGES.return_failed,
+        });
+      }
+      continue;
+    }
+    await r.transport.update(ctx, back.id, {
+      provider: option.legs[0]!.airline,
+      serviceNumber: option.legs.map((l) => l.flightNumber).join(" + "),
+      segments: option.legs.map((l) => ({
+        from: l.from,
+        to: l.to,
+        departUtc: utc(l.depart, trip.endTz),
+        departTz: trip.endTz,
+        arriveUtc: utc(l.arrive, trip.startTz),
+        arriveTz: trip.startTz,
+      })),
+    });
+    filled++;
+  }
+  return { filled, failed };
 }

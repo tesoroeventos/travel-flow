@@ -5,6 +5,8 @@ import { z } from "zod";
 import { getDb } from "../db";
 import { requireCtx } from "../auth/session";
 import { chooseScenario, setBookingStatus } from "../services/confirm";
+import { fillReturnFlights } from "../services/trip-search";
+import { getTravelSearch } from "@/integrations/search";
 import { invalid, formObject, type FormState } from "./form";
 
 const refresh = (tripId: string) => revalidatePath(`/viajes/${tripId}`, "layout");
@@ -13,7 +15,10 @@ export async function chooseScenarioAction(tripId: string, _p: FormState, fd: Fo
   const ctx = await requireCtx();
   const scenarioId = String(fd.get("scenarioId") ?? "");
   if (!scenarioId) return { ok: false, message: "Elegí un escenario" };
-  await chooseScenario(await getDb(), ctx, tripId, scenarioId);
+  const db = await getDb();
+  await chooseScenario(db, ctx, tripId, scenarioId);
+  // La vuelta de un vuelo de la búsqueda se completa recién al elegir; si falla, queda una nota.
+  await fillReturnFlights(db, ctx, tripId, getTravelSearch()).catch(() => undefined);
   refresh(tripId);
   return { ok: true };
 }
