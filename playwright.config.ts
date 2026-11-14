@@ -37,6 +37,7 @@ export default defineConfig({
     env: {
       AI_FAKE: "1",
       RADAR_FAKE: "1",
+      SEARCH_FAKE: "1",
       DATABASE_URL: "pglite://./.data/e2e",
       AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret-e2e",
       BOOTSTRAP_INVITE_CODE: E2E_INVITE,

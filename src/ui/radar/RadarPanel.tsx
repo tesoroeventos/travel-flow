@@ -38,6 +38,8 @@ export function RadarPanel({
   const [checks, setChecks] = useState<Check[]>(initialChecks);
   const [depart, setDepart] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  // Abierta al entrar si todavía no hay opciones; después la maneja Matias (no se cierra sola al llegar resultados).
+  const [open, setOpen] = useState(!hasOptions);
 
   const hasAirports = Boolean(query.originIata && query.destinationIata);
   const q = depart ? shiftDeparture(query, depart) : query;
@@ -55,7 +57,8 @@ export function RadarPanel({
 
   return (
     <details
-      open={!hasOptions}
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
       className="group mb-5 rounded-2xl border border-line bg-surface p-4 shadow-[var(--shadow)]"
     >
       <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-x-3 gap-y-1">

@@ -54,7 +54,17 @@ export interface OfferCard {
   doubtful: string[];
   inProposals: boolean | null;
   source: string | null;
+  /** De dónde salió una oferta de la búsqueda automática ("Google Flights · 14/11 16:05") y su enlace. */
+  origin: { label: string; url: string | null } | null;
   edit: OfferEdit;
+}
+
+function originOf(
+  row: { source: string | null; url: string | null },
+  items: { source: string | null }[],
+): OfferCard["origin"] {
+  if (row.source !== "busqueda" && row.source !== "busqueda_editada") return null;
+  return { label: items[0]?.source ?? "Búsqueda", url: row.url };
 }
 
 type TripRow = LoadedTrip["trip"];
@@ -550,6 +560,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: t.leg === "internal" ? t.inProposals : null,
       source: t.source,
+      origin: originOf(t, items),
       edit: {
         kind: (KIND_OF[t.mode] === "auto_propio" ? "otro" : KIND_OF[t.mode]) as OfferKind,
         direction: sibling ? "ida_y_vuelta" : t.leg === "return" ? "vuelta" : t.leg === "outbound" ? "ida" : null,
@@ -595,6 +606,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: null,
       source: l.source,
+      origin: originOf(l, items),
       edit: {
         kind: "alojamiento",
         direction: null,
@@ -631,6 +643,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: a.inProposals,
       source: a.source,
+      origin: null,
       edit: {
         kind: isOther ? "otro" : "actividad",
         direction: null,

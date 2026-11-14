@@ -62,6 +62,18 @@ Cada sitio de `src/integrations/radar/sites.ts` tiene `verifiedAt`, la fecha en 
 
 Verificados el 14/11/2026: Google Flights, Kayak y Despegar (vuelos). Falta probar: Skyscanner (terminó en su página de inicio en la prueba), Booking, Airbnb y Vrbo.
 
+## Búsqueda automática de vuelos y alojamiento (SerpApi)
+
+Al entrar a Opciones de un viaje con aeropuertos elegidos, la app busca sola vuelos en Google Flights y alojamiento en Google Hotels a través de SerpApi, los guarda como tarjetas y arma las 3 opciones.
+
+1. Creá una cuenta gratis en **serpapi.com**.
+2. En el panel, copiá la clave de **Your Private API Key**. Es privada: pegala solo en Railway.
+3. En Railway, en las variables de la app, agregá `SERPAPI_KEY` con esa clave.
+
+El plan gratis trae 250 búsquedas por mes. Cada viaje usa 2 (vuelos y alojamiento) y elegir una opción usa 1 más, para traer el vuelo de vuelta. Volver a abrir Opciones con los mismos datos no gasta búsquedas; "Volver a buscar" sí.
+
+`SEARCH_FAKE=1` activa respuestas reales guardadas (Buenos Aires a Bariloche) para las pruebas automáticas. La app no arranca si se usa en producción.
+
 ## 3. Códigos de invitación
 
 El registro solo funciona con código. Para crear uno desde tu computadora, con la `DATABASE_URL` pública de Railway:

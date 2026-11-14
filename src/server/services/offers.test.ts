@@ -408,6 +408,29 @@ describe("ofertas de la búsqueda automática", () => {
     expect(items[0]!.source).toBe("Google Flights · 14/11 16:05");
   });
 
+  it("la tarjeta de una oferta importada dice de dónde sale y tiene el enlace", async () => {
+    await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta" })], src);
+    await saveOffers(db, ctx, tripId, [draft({ kind: "alojamiento", direction: null, name: "Nahuel" })], {
+      ...src,
+      provider: "Google Hotels",
+      url: "https://alquiler.example/nahuel",
+    });
+    const cards = offerCardsFromLoaded(await loadTrip(db, ctx, tripId));
+    expect(cards.find((c) => c.kind === "vuelo")!.origin).toEqual({
+      label: "Google Flights · 14/11 16:05",
+      url: "https://www.google.com/travel/flights?q=x",
+    });
+    expect(cards.find((c) => c.kind === "alojamiento")!.origin).toEqual({
+      label: "Google Hotels · 14/11 16:05",
+      url: "https://alquiler.example/nahuel",
+    });
+  });
+
+  it("una oferta cargada a mano no tiene origen de búsqueda", async () => {
+    await saveOffers(db, ctx, tripId, [draft({})], { kind: "manual" });
+    expect(offerCardsFromLoaded(await loadTrip(db, ctx, tripId))[0]!.origin).toBeNull();
+  });
+
   it("editar una oferta importada la marca como busqueda_editada", async () => {
     const r = makeRepos(db);
     const [saved] = await saveOffers(db, ctx, tripId, [draft({ direction: "ida_y_vuelta" })], src);

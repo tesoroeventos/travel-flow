@@ -536,7 +536,25 @@ export function OptionsBoard({
                   meta={[c.company, c.route].filter(Boolean).join(" · ")}
                   when={c.when}
                   detail={[c.score, c.detail].filter(Boolean).join(" · ")}
-                  flag={doubts.length ? <DoubtFlag items={doubts} /> : null}
+                  flag={
+                    <>
+                      {c.origin ? (
+                        c.origin.url ? (
+                          <a
+                            href={c.origin.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="self-start text-xs font-bold text-route"
+                          >
+                            {c.origin.label} ↗
+                          </a>
+                        ) : (
+                          <p className="text-xs text-ink-soft">{c.origin.label}</p>
+                        )
+                      ) : null}
+                      {doubts.length ? <DoubtFlag items={doubts} /> : null}
+                    </>
+                  }
                   price={
                     missingPrice ? (
                       <span className="text-base text-signal">Falta el precio</span>
