@@ -9,40 +9,61 @@ import { Button } from "../Button";
 function Field({
   id,
   label,
+  searchLabel,
   place,
   value,
   onChange,
 }: {
   id: string;
   label: string;
+  searchLabel: string;
   place: string;
   value: string;
   onChange: (v: string) => void;
 }) {
+  const [term, setTerm] = useState(place);
   const [hints, setHints] = useState<ReferencePlace[]>([]);
   useEffect(() => {
     let alive = true;
-    suggestPlaces(place)
-      .then((r) => alive && r.ok && setHints(r.data.slice(0, 4)))
-      .catch(() => {});
+    const t = setTimeout(() => {
+      suggestPlaces(term)
+        .then((r) => alive && setHints(r.ok ? r.data.slice(0, 4) : []))
+        .catch(() => {});
+    }, 300);
     return () => {
       alive = false;
+      clearTimeout(t);
     };
-  }, [place]);
+  }, [term]);
 
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-sm font-bold">
-        {label} <span className="font-normal text-ink-soft">({place})</span>
+        {label} {place && <span className="font-normal text-ink-soft">({place})</span>}
       </label>
       <input
         id={id}
         value={value}
+        maxLength={3}
+        autoComplete="off"
+        autoCorrect="off"
         onChange={(e) => onChange(e.target.value.toUpperCase().slice(0, 3))}
         placeholder="3 letras"
         autoCapitalize="characters"
         className="min-h-12 w-28 rounded-xl border-[1.5px] border-line bg-surface px-3 font-bold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
       />
+      <input
+        type="search"
+        aria-label={searchLabel}
+        value={term}
+        onChange={(e) => setTerm(e.target.value)}
+        placeholder="Buscar ciudad o aeropuerto"
+        autoComplete="off"
+        className="min-h-11 w-full rounded-xl border-[1.5px] border-line bg-surface px-3 text-sm"
+      />
+      {term.trim().length >= 2 && hints.length === 0 && (
+        <p className="text-xs text-ink-soft">Sin sugerencias. Probá con la ciudad grande más cercana.</p>
+      )}
       {hints.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {hints.map((h) => (
@@ -107,11 +128,19 @@ export function AirportPicker({
         <Field
           id="radar-origin"
           label="Aeropuerto de salida"
-          place={originLabel || "origen"}
+          searchLabel="Buscar ciudad o aeropuerto de salida"
+          place={originLabel}
           value={origin}
           onChange={setOrigin}
         />
-        <Field id="radar-dest" label="Aeropuerto de destino" place={destinationLabel} value={dest} onChange={setDest} />
+        <Field
+          id="radar-dest"
+          label="Aeropuerto de destino"
+          searchLabel="Buscar ciudad o aeropuerto de destino"
+          place={destinationLabel}
+          value={dest}
+          onChange={setDest}
+        />
       </div>
       {msg && (
         <p role="alert" className="text-sm text-alert">

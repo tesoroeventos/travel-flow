@@ -83,13 +83,17 @@ export function RadarPanel({
               destinationLabel={query.destinationLabel}
               originIata={query.originIata}
               destinationIata={query.destinationIata}
-              onDone={() => setEditing(false)}
+              onDone={() => {
+                setEditing(false);
+                setDepart(null);
+              }}
             />
           </div>
         )}
 
         {hasAirports && (
           <FareCalendar
+            key={`${query.originIata}-${query.destinationIata}`}
             tripId={tripId}
             tripDepart={query.depart}
             tripReturn={query.return}

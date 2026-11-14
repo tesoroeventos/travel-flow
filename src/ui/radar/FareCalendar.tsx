@@ -65,7 +65,7 @@ export function FareCalendar({
 
   const byDay = new Map(state.fares.map((f) => [f.date, f]));
   const days = windowDates(tripDepart, tripReturn, 3, localToday()).map((d) => d.depart);
-  const best = cheapestDay(state.fares);
+  const best = cheapestDay(state.fares, days);
   const bestFare = best ? byDay.get(best) : undefined;
   const shown = state.fares.map((f) => displayFare(f, baseCurrency, usdRate).currency);
   const currency = shown[0] ?? baseCurrency;
@@ -87,7 +87,7 @@ export function FareCalendar({
                 type="button"
                 onClick={() => onPick(day)}
                 aria-pressed={isSel}
-                aria-label={`${fmtDay(day)}: ${shownFare ? `${amountFmt.format(shownFare.amountCents / 100)} ${shownFare.currency}` : "sin datos"}`}
+                aria-label={`${fmtDay(day)}: ${shownFare ? `${amountFmt.format(shownFare.amountCents / 100)} ${shownFare.currency}${f?.oneWay ? ", solo ida" : ""}` : "sin datos"}`}
                 className={`flex w-full flex-col items-center gap-0.5 rounded-xl border-[1.5px] px-1 py-2 text-center transition ${
                   isSel
                     ? "border-route bg-route-soft"
@@ -100,6 +100,7 @@ export function FareCalendar({
                 <span className={`text-sm tabular-nums ${shownFare ? "" : "text-ink-soft"}`}>
                   {shownFare ? amountFmt.format(shownFare.amountCents / 100) : "sin datos"}
                 </span>
+                {f?.oneWay && <span className="text-[0.7rem] text-signal">solo ida</span>}
                 {day === best && <span className="text-[0.7rem] font-bold text-route">más bajo</span>}
               </button>
             </li>

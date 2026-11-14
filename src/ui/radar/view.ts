@@ -32,9 +32,16 @@ export function siteButtons(
   }));
 }
 
-export function cheapestDay(fares: ReferenceFare[]): string | null {
+/**
+ * Día más barato entre los visibles. Si hay precios de ida y vuelta, compite solo entre ellos:
+ * un precio de solo ida no se compara con uno de ida y vuelta.
+ */
+export function cheapestDay(fares: ReferenceFare[], visibleDays?: string[]): string | null {
+  const shown = visibleDays ? fares.filter((f) => visibleDays.includes(f.date)) : fares;
+  const round = shown.filter((f) => !f.oneWay);
+  const pool = round.length > 0 ? round : shown;
   let best: ReferenceFare | null = null;
-  for (const f of fares) if (!best || f.amountCents < best.amountCents) best = f;
+  for (const f of pool) if (!best || f.amountCents < best.amountCents) best = f;
   return best?.date ?? null;
 }
 

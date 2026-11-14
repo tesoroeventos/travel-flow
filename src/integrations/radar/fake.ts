@@ -6,7 +6,6 @@ import type { ReferenceFare, ReferencePlace, ReferencePriceProvider } from "../t
 const BRC_PRICES = [98_000, 112_000, null, 105_000, 87_000, 90_000, null];
 
 const PLACES: Record<string, ReferencePlace> = {
-  zarate: { code: "BUE", name: "Buenos Aires", kind: "city" },
   buenos: { code: "BUE", name: "Buenos Aires", kind: "city" },
   bariloche: { code: "BRC", name: "San Carlos de Bariloche", kind: "city" },
   mendoza: { code: "MDZ", name: "Mendoza", kind: "city" },

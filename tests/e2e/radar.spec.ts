@@ -19,6 +19,8 @@ test.describe("radar de fuentes", () => {
     await expect(radar.getByRole("region", { name: "Vuelos" })).toHaveCount(0);
     await expect(radar.getByRole("region", { name: "Alojamiento" })).toBeVisible();
 
+    // Zárate no tiene aeropuerto: se busca la ciudad por nombre.
+    await radar.getByLabel("Buscar ciudad o aeropuerto de salida").fill("Buenos Aires");
     await radar.getByRole("button", { name: "BUE · Buenos Aires" }).click();
     await radar.getByRole("button", { name: "BRC · San Carlos de Bariloche" }).click();
     await radar.getByRole("button", { name: "Guardar aeropuertos" }).click();
@@ -62,10 +64,27 @@ test.describe("radar de fuentes", () => {
   test("ruta sin datos muestra el aviso y los enlaces", async ({ page }) => {
     await createQuickTrip(page, { destination: "Mendoza" });
     const radar = page.locator("details", { hasText: "Buscar en otros sitios" });
+    await radar.getByLabel("Buscar ciudad o aeropuerto de salida").fill("Buenos Aires");
     await radar.getByRole("button", { name: "BUE · Buenos Aires" }).click();
     await radar.getByRole("button", { name: "MDZ · Mendoza" }).click();
     await radar.getByRole("button", { name: "Guardar aeropuertos" }).click();
     await expect(radar.getByText("Nadie buscó esta ruta en los últimos días. Usá los enlaces.")).toBeVisible();
     await expect(radar.locator('a[data-site="kayak"]')).toHaveAttribute("href", /BUE-MDZ/);
+  });
+
+  test("al cambiar los aeropuertos el calendario se vuelve a pedir", async ({ page }) => {
+    await createQuickTrip(page);
+    const radar = page.locator("details", { hasText: "Buscar en otros sitios" });
+    await radar.getByLabel("Buscar ciudad o aeropuerto de salida").fill("Buenos Aires");
+    await radar.getByRole("button", { name: "BUE · Buenos Aires" }).click();
+    await radar.getByRole("button", { name: "BRC · San Carlos de Bariloche" }).click();
+    await radar.getByRole("button", { name: "Guardar aeropuertos" }).click();
+    await expect(radar.getByText("más bajo")).toBeVisible();
+
+    await radar.getByRole("button", { name: "Cambiar" }).click();
+    await radar.getByRole("textbox", { name: /^Aeropuerto de destino/ }).fill("MDZ");
+    await radar.getByRole("button", { name: "Guardar aeropuertos" }).click();
+    await expect(radar.getByText("Nadie buscó esta ruta en los últimos días. Usá los enlaces.")).toBeVisible();
+    await expect(radar.getByText("más bajo")).toHaveCount(0);
   });
 });

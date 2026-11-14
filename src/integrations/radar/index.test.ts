@@ -56,8 +56,10 @@ describe("radar simulado", () => {
     expect(r.ok && r.data.data).toEqual([]);
   });
 
-  it("sugiere BUE para Zárate y BRC para Bariloche", async () => {
-    const a = await fakeReferencePrices.places("Zárate");
+  it("no sugiere nada para Zárate (sin aeropuerto), BUE para Buenos Aires y BRC para Bariloche", async () => {
+    const z = await fakeReferencePrices.places("Zárate");
+    expect(z.ok && z.data.data).toEqual([]);
+    const a = await fakeReferencePrices.places("Buenos Aires");
     const b = await fakeReferencePrices.places("Bariloche");
     expect(a.ok && a.data.data[0]!.code).toBe("BUE");
     expect(b.ok && b.data.data[0]!.code).toBe("BRC");

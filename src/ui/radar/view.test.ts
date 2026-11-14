@@ -67,6 +67,18 @@ describe("calendario", () => {
     expect(cheapestDay([])).toBeNull();
   });
 
+  it("cheapestDay compara ida y vuelta con ida y vuelta: un solo ida más barato no gana", () => {
+    const oneWay = { ...fare("2027-01-09", 50), oneWay: true };
+    expect(cheapestDay([oneWay, fare("2027-01-11", 100), fare("2027-01-12", 200)])).toBe("2027-01-11");
+    expect(cheapestDay([oneWay, { ...fare("2027-01-12", 80), oneWay: true }])).toBe("2027-01-09");
+  });
+
+  it("cheapestDay ignora días que no se muestran", () => {
+    expect(cheapestDay([fare("2027-01-09", 50), fare("2027-01-11", 100)], ["2027-01-10", "2027-01-11"])).toBe(
+      "2027-01-11",
+    );
+  });
+
   it("convierte USD con el tipo de cambio del viaje y si no lo deja en USD", () => {
     const f = fare("2027-01-10", 10000, "USD");
     expect(displayFare(f, "ARS", 1200)).toEqual({ amountCents: 12000000, currency: "ARS" });
