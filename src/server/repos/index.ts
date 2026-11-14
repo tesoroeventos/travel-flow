@@ -12,6 +12,7 @@ import {
 } from "../db/schema";
 import { makeChildRepo } from "./child";
 import { makeEventsRepo } from "./events";
+import { makeRadarRepo } from "./radar";
 import { makeRatesRepo } from "./rates";
 import { makeTripsRepo } from "./trips";
 
@@ -30,6 +31,7 @@ export function makeRepos(db: Db) {
     bookings: makeChildRepo(db, bookings, "booking", events),
     expenses: makeChildRepo(db, expenses, "expense", events),
     rates: makeRatesRepo(db),
+    radar: makeRadarRepo(db),
   };
 }
 
