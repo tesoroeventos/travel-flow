@@ -5,6 +5,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import { z } from "zod";
 import { err, ok, type Result } from "@/domain/result";
 import { buildRadarQuery, shiftDeparture } from "@/domain/radar/query";
+import { searchAirports } from "@/domain/search/airports";
 import { RADAR_MESSAGES, findSite, getReferencePrices } from "@/integrations/radar";
 import type { ReferencePlace } from "@/integrations/types";
 import { getDb } from "../db";
@@ -60,8 +61,14 @@ export async function suggestPlaces(term: string): Promise<Result<ReferencePlace
   await requireCtx();
   const t = String(term ?? "").trim();
   if (t.length < 2 || t.length > 60) return ok([]);
-  const res = await getReferencePrices().places(t);
-  return res.ok ? ok(res.data.data) : res;
+  // Lista fija: no gasta búsquedas y no sugiere lugares de otros países que no vienen al caso.
+  return ok(
+    searchAirports(t).map((a) => ({
+      code: a.code,
+      name: a.country === "Argentina" ? a.city : `${a.city} (${a.country})`,
+      kind: "city" as const,
+    })),
+  );
 }
 
 export async function loadCalendar(tripId: string, depart?: string): Promise<Result<CalendarResult>> {
