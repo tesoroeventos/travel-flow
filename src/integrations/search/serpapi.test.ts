@@ -166,10 +166,19 @@ describe("SerpApi: errores", () => {
     expect(!r.ok && r.error.code).toBe("no_credits");
   });
 
+  it("'sin resultados' es una búsqueda vacía, no un error", async () => {
+    const empty = { search_metadata: { status: "Success" }, error: "Google Flights hasn't returned any results for this query." };
+    const f = await serpApiSearch("k", fakeFetch([{ body: empty }]).fn).flights(q);
+    expect(f.ok && f.data.options).toEqual([]);
+    const hEmpty = { search_metadata: { status: "Success" }, error: "Google Hotels hasn't returned any results for this query." };
+    const h = await serpApiSearch("k", fakeFetch([{ body: hEmpty }]).fn).hotels(hq);
+    expect(h.ok && h.data.properties).toEqual([]);
+  });
+
   it("otro error en el cuerpo es unavailable", async () => {
     const r = await serpApiSearch(
       "k",
-      fakeFetch([{ body: { error: "Google hasn't returned any results." } }]).fn,
+      fakeFetch([{ body: { error: "Unsupported `departure_id` parameter." } }]).fn,
     ).flights(q);
     expect(!r.ok && r.error.code).toBe("unavailable");
   });

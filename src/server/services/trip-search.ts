@@ -1,4 +1,5 @@
-import { eq } from "drizzle-orm";
+import { eq, isNull, lt, or } from "drizzle-orm";
+import { formatInTimeZone } from "date-fns-tz";
 import { err, ok, type Result } from "@/domain/result";
 import { buildRadarQuery, type RadarQuery } from "@/domain/radar/query";
 import { findAirport } from "@/domain/search/airports";
@@ -30,6 +31,9 @@ import { saveOffers } from "./offers";
 import { deleteOption } from "./options";
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+/** Una búsqueda que lleva más que esto se considera colgada y se puede retomar. */
+export const RUNNING_STALE_MS = 2 * 60 * 1000;
+export const PAST_TRIP_MESSAGE = "Las fechas del viaje ya pasaron: no busco vuelos ni alojamiento.";
 
 export interface TripSearchSummary {
   flights: number;
@@ -37,6 +41,8 @@ export interface TripSearchSummary {
   missingAirlines: string[];
   searchedAt: string;
   skipped: boolean;
+  /** Hay otra búsqueda en curso para este viaje. */
+  running: boolean;
   messages: string[];
 }
 
@@ -63,6 +69,11 @@ export function flightQueryFor(q: RadarQuery, currency: SearchCurrency): FlightQ
     infants: q.infants,
     currency,
   };
+}
+
+/** true si la fila marca una búsqueda en curso que todavía no se colgó. */
+export function isRunning(row: { runningSince: Date | null }, now: Date = new Date()): boolean {
+  return row.runningSince !== null && now.getTime() - row.runningSince.getTime() < RUNNING_STALE_MS;
 }
 
 export async function getTripSearch(db: Db, ctx: Ctx, tripId: string) {
@@ -130,18 +141,39 @@ export async function runTripSearch(
   if (!trip.originIata || !trip.destinationIata) return err("no_airports", RADAR_MESSAGES.no_airports);
 
   const q = buildRadarQuery(trip, await r.travelers.list(ctx, tripId));
+  if (q.depart < formatInTimeZone(now, trip.startTz, "yyyy-MM-dd")) return err("past_trip", PAST_TRIP_MESSAGE);
   const currency = searchCurrency(trip.baseCurrency);
   const paramsKey = searchParamsKey(q, currency);
   const previous = await getTripSearch(db, ctx, tripId);
+  const skippedFrom = (row: NonNullable<typeof previous>, running: boolean): TripSearchSummary => ({
+    flights: row.flightsCount,
+    lodging: row.lodgingCount,
+    missingAirlines: row.missingAirlines,
+    searchedAt: row.searchedAt.toISOString(),
+    skipped: true,
+    running,
+    messages: row.error ? [row.error] : [],
+  });
   if (previous && previous.paramsKey === paramsKey && !force) {
-    return ok({
-      flights: previous.flightsCount,
-      lodging: previous.lodgingCount,
-      missingAirlines: previous.missingAirlines,
-      searchedAt: previous.searchedAt.toISOString(),
-      skipped: true,
-      messages: previous.error ? [previous.error] : [],
-    });
+    return ok(skippedFrom(previous, isRunning(previous, now)));
+  }
+
+  // Reclamo la búsqueda antes de llamar al proveedor: una recarga u otra pestaña no la repite.
+  const [claimed] = await db
+    .insert(tripSearches)
+    .values({ tripId, paramsKey, searchedAt: now, flightsCount: 0, lodgingCount: 0, runningSince: now })
+    .onConflictDoUpdate({
+      target: tripSearches.tripId,
+      set: { paramsKey, runningSince: now },
+      setWhere: or(
+        isNull(tripSearches.runningSince),
+        lt(tripSearches.runningSince, new Date(now.getTime() - RUNNING_STALE_MS)),
+      ),
+    })
+    .returning();
+  if (!claimed) {
+    const current = (await getTripSearch(db, ctx, tripId))!;
+    return ok(skippedFrom(current, true));
   }
 
   const groupSize = Math.max(1, q.adults + q.children + q.infants);
@@ -158,7 +190,14 @@ export async function runTripSearch(
     cached<FlightsResult>(db, `serp:flights:${paramsKey}`, force, now, () => search.flights(fq)),
     cached<HotelsResult>(db, `serp:hotels:${paramsKey}`, force, now, () => search.hotels(hq)),
   ]);
-  if (!fr.ok && !hr.ok) return fr;
+  if (!fr.ok && !hr.ok) {
+    // Queda registrado: no se reintenta solo en cada visita (para eso está "Volver a buscar").
+    await db
+      .update(tripSearches)
+      .set({ runningSince: null, error: fr.error.message })
+      .where(eq(tripSearches.tripId, tripId));
+    return fr;
+  }
 
   const consultedAt = now.toISOString();
   const messages: string[] = [];
@@ -216,13 +255,14 @@ export async function runTripSearch(
     lodgingCount: lodging,
     missingAirlines,
     error: messages.length ? messages.join(" ") : null,
+    runningSince: null,
   };
   await db
     .insert(tripSearches)
     .values({ tripId, ...row })
     .onConflictDoUpdate({ target: tripSearches.tripId, set: row });
 
-  return ok({ flights, lodging, missingAirlines, searchedAt: consultedAt, skipped: false, messages });
+  return ok({ flights, lodging, missingAirlines, searchedAt: consultedAt, skipped: false, running: false, messages });
 }
 
 /** "YYYY-MM-DD HH:MM" en la zona dada → ISO UTC. */
@@ -240,24 +280,33 @@ export async function fillReturnFlights(
 ): Promise<{ filled: number; failed: number }> {
   const r = makeRepos(db);
   const trip = await r.trips.require(ctx, tripId);
-  const [bookings, transport] = await Promise.all([r.bookings.list(ctx, tripId), r.transport.list(ctx, tripId)]);
+  const [bookings, transport, items] = await Promise.all([
+    r.bookings.list(ctx, tripId),
+    r.transport.list(ctx, tripId),
+    r.costItems.list(ctx, tripId),
+  ]);
   const booked = new Set(bookings.filter((b) => b.ownerType === "transport_option").map((b) => b.ownerId));
   const pending = transport
     .filter((t) => t.leg === "outbound" && t.externalRef && t.pairId && booked.has(t.id))
     .map((t) => ({
       token: t.externalRef!,
       back: transport.find((x) => x.pairId === t.pairId && x.leg === "return" && x.segments.length === 0),
+      price: items.find((i) => i.ownerType === "transport_option" && i.ownerId === t.id),
     }))
-    .filter((x): x is { token: string; back: (typeof transport)[number] } => x.back !== undefined);
+    .filter(
+      (x): x is { token: string; back: (typeof transport)[number]; price: (typeof items)[number] | undefined } =>
+        x.back !== undefined,
+    );
   if (pending.length === 0 || !trip.originIata || !trip.destinationIata) return { filled: 0, failed: 0 };
 
   const q = buildRadarQuery(trip, await r.travelers.list(ctx, tripId));
   const fq = flightQueryFor(q, searchCurrency(trip.baseCurrency));
   let filled = 0;
   let failed = 0;
-  for (const { token, back } of pending) {
+  for (const { token, back, price } of pending) {
     const res = await search.returnFlights(fq, token);
-    const option = res.ok ? chooseReturn(res.data) : null;
+    const cardPrice = price ? price.amountCents / 100 : null;
+    const option = res.ok ? chooseReturn(res.data, cardPrice) : null;
     if (!option) {
       failed++;
       const notes = back.notes ?? "";
@@ -268,7 +317,15 @@ export async function fillReturnFlights(
       }
       continue;
     }
+    // Si ninguna vuelta da el total de la tarjeta, el costo pasa a ser el de la combinación elegida.
+    let note: string | null = back.notes;
+    if (price && option.price !== null && option.price !== cardPrice) {
+      await r.costItems.update(ctx, price.id, { amountCents: Math.round(option.price * 100) });
+      const text = `El total cambió con esta vuelta: ${price.currency === "USD" ? "US$" : "$"} ${new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(option.price)}`;
+      note = note ? `${note}\n${text}` : text;
+    }
     await r.transport.update(ctx, back.id, {
+      notes: note,
       provider: option.legs[0]!.airline,
       serviceNumber: option.legs.map((l) => l.flightNumber).join(" + "),
       segments: option.legs.map((l) => ({

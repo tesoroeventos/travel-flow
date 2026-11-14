@@ -132,9 +132,12 @@ function fail(code: SearchErrorCode): Result<never> {
   return err(code, SEARCH_MESSAGES[code]);
 }
 
+/** "Sin resultados" no es un error: es una búsqueda vacía (SerpApi lo manda con status Success). */
+const NO_RESULTS = /hasn't returned any results/i;
+
 function classifyBody(body: unknown): SearchErrorCode | null {
   const msg = (body as { error?: unknown })?.error;
-  if (typeof msg !== "string") return null;
+  if (typeof msg !== "string" || NO_RESULTS.test(msg)) return null;
   return /run out of searches/i.test(msg) ? "no_credits" : "unavailable";
 }
 

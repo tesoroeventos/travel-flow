@@ -38,6 +38,8 @@ export default defineConfig({
       AI_FAKE: "1",
       RADAR_FAKE: "1",
       SEARCH_FAKE: "1",
+      // La búsqueda simulada tarda un poco, como la real, para probar recargas en medio.
+      SEARCH_FAKE_DELAY_MS: "3000",
       DATABASE_URL: "pglite://./.data/e2e",
       AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret-e2e",
       BOOTSTRAP_INVITE_CODE: E2E_INVITE,

@@ -59,9 +59,18 @@ export function flightToDraft(o: FlightOption, currency: SearchCurrency): OfferD
   };
 }
 
-/** La vuelta a usar: la primera de las mejores con precio; si no hay, la primera con precio. */
-export function chooseReturn(r: FlightsResult): FlightOption | null {
-  return r.options.find((o) => o.best && o.price !== null) ?? r.options.find((o) => o.price !== null) ?? null;
+/**
+ * La vuelta a usar. Con el precio de la tarjeta: la que da ese mismo total (la primera de las mejores si hay
+ * varias); si ninguna lo da, la más barata. Sin precio: la primera de las mejores con precio.
+ */
+export function chooseReturn(r: FlightsResult, outboundPrice?: number | null): FlightOption | null {
+  const priced = r.options.filter((o) => o.price !== null);
+  if (outboundPrice != null) {
+    const same = priced.filter((o) => o.price === outboundPrice);
+    if (same.length) return same.find((o) => o.best) ?? same[0]!;
+    return [...priced].sort((a, b) => a.price! - b.price!)[0] ?? null;
+  }
+  return priced.find((o) => o.best) ?? priced[0] ?? null;
 }
 
 /**

@@ -45,6 +45,18 @@ test.describe("búsqueda automática", () => {
     await expect(page.getByText("Aerolíneas Argentinas").first()).toBeVisible();
   });
 
+  test("al elegir una opción se completa el vuelo de vuelta", async ({ page }) => {
+    const trip = await createQuickTrip(page);
+    await chooseAirports(page);
+    await expect(page.getByRole("region", { name: "Búsqueda automática" }).getByText("✓ 5 vuelos y 6 alojamientos")).toBeVisible();
+    await page.goto(`${trip}/propuestas`);
+    await page.getByRole("article", { name: "La más barata" }).getByRole("button", { name: "Elegir esta" }).click();
+    await expect(page).toHaveURL(`${trip}/confirmar`);
+    await page.goto(`${trip}/itinerario`);
+    // La vuelta simulada es el AR 1682 dado vuelta: sale de Bariloche el 16/01 a las 18:20.
+    await expect(page.getByText("Aerolíneas Argentinas AR 1682 · BRC → EZE")).toBeVisible();
+  });
+
   test("Volver a buscar reemplaza las importadas", async ({ page }) => {
     await createQuickTrip(page);
     await chooseAirports(page);
@@ -52,6 +64,18 @@ test.describe("búsqueda automática", () => {
     await expect(auto.getByText("✓ 5 vuelos y 6 alojamientos")).toBeVisible();
     await auto.getByRole("button", { name: "Volver a buscar" }).click();
     await expect(auto.getByText("✓ 5 vuelos y 6 alojamientos")).toBeVisible();
+    await expect(flightLinks(page)).toHaveCount(5);
+    await expect(hotelLinks(page)).toHaveCount(6);
+  });
+
+  test("recargar en medio de la búsqueda no busca de nuevo ni duplica", async ({ page }) => {
+    await createQuickTrip(page);
+    await chooseAirports(page);
+    const auto = page.getByRole("region", { name: "Búsqueda automática" });
+    await expect(auto.getByText("Buscando vuelos y alojamiento…")).toBeVisible();
+    // Se recarga con la búsqueda en curso; la recargada no lanza otra (si termina antes, igual no duplica).
+    await page.reload();
+    await expect(auto.getByText("✓ 5 vuelos y 6 alojamientos")).toBeVisible({ timeout: 15_000 });
     await expect(flightLinks(page)).toHaveCount(5);
     await expect(hotelLinks(page)).toHaveCount(6);
   });

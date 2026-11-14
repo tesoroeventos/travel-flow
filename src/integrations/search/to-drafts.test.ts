@@ -99,6 +99,18 @@ describe("vuelos", () => {
     });
   });
 
+  it("chooseReturn prefiere la vuelta con el mismo precio total que la ida", () => {
+    const [a, b, c] = flights.options;
+    const r = { options: [{ ...a!, price: 999 }, { ...b!, price: 733920 }, { ...c!, price: 733920, best: false }] };
+    expect(chooseReturn(r, 733920)!.legs[0]!.flightNumber).toBe(b!.legs[0]!.flightNumber);
+  });
+
+  it("sin precio igual, chooseReturn toma la más barata", () => {
+    const [a, b] = flights.options;
+    const r = { options: [{ ...a!, price: 800000 }, { ...b!, price: 750000, best: false }] };
+    expect(chooseReturn(r, 733920)!.price).toBe(750000);
+  });
+
   it("chooseReturn prefiere la primera mejor con precio", () => {
     expect(chooseReturn(flights)!.price).toBe(733920);
     expect(chooseReturn({ options: flights.options.filter((o) => !o.best) })!.price).toBe(901940);

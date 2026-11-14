@@ -446,4 +446,6 @@ export const tripSearches = pgTable("trip_searches", {
   lodgingCount: integer("lodging_count").notNull(),
   missingAirlines: jsonb("missing_airlines").$type<string[]>().notNull().default([]),
   error: text("error"),
+  /** Búsqueda en curso desde esta hora: otra pestaña o una recarga no la repite. */
+  runningSince: timestamp("running_since", { withTimezone: true }),
 });

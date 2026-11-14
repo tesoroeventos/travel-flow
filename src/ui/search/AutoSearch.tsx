@@ -10,6 +10,7 @@ export function AutoSearch({
   configured,
   configMessage,
   needsSearch,
+  running,
   paramsKey,
   summary,
   messages,
@@ -20,6 +21,8 @@ export function AutoSearch({
   configured: boolean;
   configMessage: string;
   needsSearch: boolean;
+  /** Otra búsqueda (otra pestaña o antes de recargar) sigue en curso. */
+  running: boolean;
   paramsKey: string;
   summary: { flights: number; lodging: number; searchedAt: string } | null;
   messages: string[];
@@ -55,6 +58,14 @@ export function AutoSearch({
     void run(false);
   }, [configured, needsSearch, paramsKey, run]);
 
+  // Mientras otra búsqueda sigue en curso, la página se vuelve a pedir cada tanto hasta que termine.
+  useEffect(() => {
+    if (!running) return;
+    const t = setTimeout(() => router.refresh(), 2500);
+    return () => clearTimeout(t);
+  }, [running, router]);
+
+  const searching = busy || running;
   const missing = missingText(missingAirlines);
 
   return (
@@ -73,24 +84,24 @@ export function AutoSearch({
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p role="status" className="text-sm font-bold">
-              {busy ? "Buscando vuelos y alojamiento…" : summary ? summaryText(summary) : ""}
+              {searching ? "Buscando vuelos y alojamiento…" : summary ? summaryText(summary) : ""}
             </p>
             <button
               type="button"
-              disabled={busy}
+              disabled={searching}
               onClick={() => void run(true)}
               className="min-h-11 rounded-xl border-[1.5px] border-line px-3 text-sm font-bold disabled:opacity-50"
             >
               Volver a buscar
             </button>
           </div>
-          {!busy &&
-            [...(error ? [error] : []), ...messages].map((m) => (
+          {!searching &&
+            [...new Set([...(error ? [error] : []), ...messages])].map((m) => (
               <p key={m} className="text-sm text-signal">
                 {m}
               </p>
             ))}
-          {!busy && missing && (
+          {!searching && missing && (
             <p className="text-sm text-ink-soft">
               {missing}
               {missingAirlines.map((a) =>

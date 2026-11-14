@@ -7,7 +7,14 @@ import { OptionsBoard } from "@/ui/options/OptionsBoard";
 import { RadarPanel } from "@/ui/radar/RadarPanel";
 import { RADAR_SITES } from "@/integrations/radar/sites";
 import { SEARCH_MESSAGES, searchConfigured } from "@/integrations/search";
-import { getTripSearch, searchCurrency, searchParamsKey } from "@/server/services/trip-search";
+import { formatInTimeZone } from "date-fns-tz";
+import {
+  getTripSearch,
+  isRunning,
+  PAST_TRIP_MESSAGE,
+  searchCurrency,
+  searchParamsKey,
+} from "@/server/services/trip-search";
 import { AutoSearch } from "@/ui/search/AutoSearch";
 
 export const metadata = { title: "Opciones · TravelFlow" };
@@ -24,6 +31,8 @@ export default async function OptionsPage({ params }: PageProps<"/viajes/[id]/op
   const paramsKey = searchParamsKey(query, searchCurrency(data.trip.baseCurrency));
   const last = hasAirports ? await getTripSearch(db, ctx, id) : null;
   const configured = searchConfigured();
+  const running = last ? isRunning(last) : false;
+  const past = query.depart < formatInTimeZone(new Date(), data.trip.startTz, "yyyy-MM-dd");
   // Enlace a cada aerolínea que Google mostró sin precio (por ejemplo, Flybondi).
   const airlineLinks = Object.fromEntries(
     (last?.missingAirlines ?? []).flatMap((a) => {
@@ -51,14 +60,15 @@ export default async function OptionsPage({ params }: PageProps<"/viajes/[id]/op
           tripId={id}
           configured={configured}
           configMessage={SEARCH_MESSAGES.not_configured}
-          needsSearch={configured && last?.paramsKey !== paramsKey}
+          needsSearch={configured && !past && !running && last?.paramsKey !== paramsKey}
+          running={running}
           paramsKey={paramsKey}
           summary={
             last
               ? { flights: last.flightsCount, lodging: last.lodgingCount, searchedAt: last.searchedAt.toISOString() }
               : null
           }
-          messages={last?.error ? [last.error] : []}
+          messages={past ? [PAST_TRIP_MESSAGE] : last?.error ? [last.error] : []}
           missingAirlines={last?.missingAirlines ?? []}
           airlineLinks={airlineLinks}
         />
