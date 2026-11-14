@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { formatInTimeZone } from "date-fns-tz";
 import { carCostItems } from "@/domain/costs/car";
 import { formatMoney, money } from "@/domain/money/money";
 import { addDays, localDate, localTime, zonedToUtc } from "@/domain/time/calendar";
@@ -12,7 +13,13 @@ import { itemsTotalCents, ownerItems } from "./costing";
 import { loadTrip, type LoadedTrip } from "./load-trip";
 import { deleteOption } from "./options";
 
-export type OfferSource = { kind: "captura" } | { kind: "link"; url: string } | { kind: "manual" } | { kind: "auto" };
+export type OfferSource =
+  | { kind: "captura" }
+  | { kind: "link"; url: string }
+  | { kind: "manual" }
+  | { kind: "auto" }
+  | { kind: "busqueda"; provider: string; url: string | null; consultedAt: string }
+  | { kind: "busqueda_editada" };
 export type OfferOwner = "transport_option" | "lodging_option" | "activity";
 export interface SavedOffer {
   ownerType: OfferOwner;
@@ -47,7 +54,17 @@ export interface OfferCard {
   doubtful: string[];
   inProposals: boolean | null;
   source: string | null;
+  /** De dónde salió una oferta de la búsqueda automática ("Google Flights · 14/11 16:05") y su enlace. */
+  origin: { label: string; url: string | null } | null;
   edit: OfferEdit;
+}
+
+function originOf(
+  row: { source: string | null; url: string | null },
+  items: { source: string | null }[],
+): OfferCard["origin"] {
+  if (row.source !== "busqueda" && row.source !== "busqueda_editada") return null;
+  return { label: items[0]?.source ?? "Búsqueda", url: row.url };
 }
 
 type TripRow = LoadedTrip["trip"];
@@ -177,6 +194,9 @@ function sourceLabel(src: OfferSource): string {
   if (src.kind === "captura") return "Captura";
   if (src.kind === "manual") return "Cargado a mano";
   if (src.kind === "auto") return "Estimado por IA";
+  if (src.kind === "busqueda_editada") return "Búsqueda editada";
+  if (src.kind === "busqueda")
+    return `${src.provider} · ${formatInTimeZone(new Date(src.consultedAt), "America/Argentina/Buenos_Aires", "dd/MM HH:mm")}`;
   try {
     return new URL(src.url).hostname.replace(/^www\./, "");
   } catch {
@@ -216,7 +236,7 @@ async function saveOne(db: Db, ctx: Ctx, trip: TripRow, d: OfferDraft, src: Offe
   const r = makeRepos(db);
   const tripId = trip.id;
   const label = sourceLabel(src);
-  const url = src.kind === "link" ? src.url : null;
+  const url = src.kind === "link" || src.kind === "busqueda" ? src.url : null;
   const notes = withMark(d.detail, d.doubtful);
   const table = tableOf(d.kind);
 
@@ -540,6 +560,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: t.leg === "internal" ? t.inProposals : null,
       source: t.source,
+      origin: originOf(t, items),
       edit: {
         kind: (KIND_OF[t.mode] === "auto_propio" ? "otro" : KIND_OF[t.mode]) as OfferKind,
         direction: sibling ? "ida_y_vuelta" : t.leg === "return" ? "vuelta" : t.leg === "outbound" ? "ida" : null,
@@ -585,6 +606,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: null,
       source: l.source,
+      origin: originOf(l, items),
       edit: {
         kind: "alojamiento",
         direction: null,
@@ -621,6 +643,7 @@ export function offerCardsFromLoaded(data: LoadedTrip, opts: { today?: string } 
       doubtful,
       inProposals: a.inProposals,
       source: a.source,
+      origin: null,
       edit: {
         kind: isOther ? "otro" : "actividad",
         direction: null,
@@ -752,8 +775,11 @@ async function updateOfferTx(
     tableOf(merged.kind) === "transport_option" &&
     merged.kind !== "auto_alquiler";
   const src = (row.source as OfferSource["kind"] | null) ?? "manual";
-  const source: OfferSource =
-    src === "link" && row.url
+  // Una oferta de la búsqueda automática que se edita pasa a ser de Matias y deja de reemplazarse.
+  const edited = src === "busqueda" || src === "busqueda_editada";
+  const source: OfferSource = edited
+    ? { kind: "busqueda_editada" }
+    : src === "link" && row.url
       ? { kind: "link", url: row.url }
       : ({ kind: src === "link" ? "manual" : src } as OfferSource);
 
@@ -781,6 +807,7 @@ async function updateOfferTx(
       segments: segmentsFor(trip, wasPair ? t.leg : leg, merged),
       comfortRating: merged.comfort,
       notes: merged.detail || null,
+      ...(edited ? { source: "busqueda_editada" } : {}),
     });
     // La otra mitad de un "ida y vuelta" recibe los mismos datos (con el tramo invertido), salvo sus horarios.
     if (wasPair && t.pairId) {
@@ -793,6 +820,7 @@ async function updateOfferTx(
           toLabel: merged.from || sib.toLabel,
           comfortRating: merged.comfort,
           notes: merged.detail || null,
+          ...(edited ? { source: "busqueda_editada" } : {}),
         });
       }
     }
@@ -811,6 +839,7 @@ async function updateOfferTx(
       rating: ratingFromScore(merged.score),
       qualityRating: merged.comfort,
       notes: merged.detail || null,
+      ...(edited ? { source: "busqueda_editada" } : {}),
     });
     await replacePrice(db, ctx, trip, "lodging_option", card.id, merged, "lodging", label);
   } else {

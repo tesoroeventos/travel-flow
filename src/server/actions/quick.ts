@@ -26,6 +26,8 @@ import {
   type SavedOffer,
 } from "../services/offers";
 import { chooseProposal } from "../services/proposals";
+import { fillReturnFlights } from "../services/trip-search";
+import { getTravelSearch } from "@/integrations/search";
 import { createQuickTrip, quickTripSchema, tripContext, updateQuickTrip } from "../services/quick-trip";
 import { formValues, zodErrors, type FormState } from "./form";
 
@@ -293,6 +295,7 @@ export async function chooseProposalAction(
     })
     .parse(p);
   await chooseProposal(db, ctx, tripId, parsed);
+  await fillReturnFlights(db, ctx, tripId, getTravelSearch()).catch(() => undefined);
   refresh(tripId);
   redirect(`/viajes/${tripId}/confirmar`);
 }

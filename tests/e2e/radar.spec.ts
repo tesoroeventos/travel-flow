@@ -1,5 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createQuickTrip, expectNoHorizontalScroll, registerUser, uploadShots } from "./helpers";
+
+/** Abre la sección del radar si está plegada. */
+async function openRadar(page: Page) {
+  const radar = page.locator("details", { hasText: "Buscar en otros sitios" });
+  if ((await radar.getAttribute("open")) === null) await radar.locator("summary").click();
+  await expect(radar).toHaveAttribute("open", "");
+}
 
 test.describe("radar de fuentes", () => {
   test.beforeEach(async ({ page }) => {
@@ -47,11 +54,14 @@ test.describe("radar de fuentes", () => {
     await expect(radar.getByText("Revisaste 1 de 17")).toBeVisible();
     await expect(radar.locator('a[data-site="booking"]')).toContainText("(revisado)");
 
+    // Con aeropuertos, la búsqueda automática ya trajo opciones: al recargar la sección arranca plegada.
     await page.reload();
+    await openRadar(page);
     await expect(page.getByText("Revisaste 1 de 17")).toBeVisible();
     await page.getByRole("button", { name: "Empezar de nuevo" }).click();
     await expect(page.getByText("Revisaste 0 de 17")).toBeVisible();
     await page.reload();
+    await openRadar(page);
     await expect(page.getByText("Revisaste 0 de 17")).toBeVisible();
 
     // Lo que se encuentra vuelve por la carga rápida de siempre.

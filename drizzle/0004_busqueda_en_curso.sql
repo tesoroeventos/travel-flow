@@ -1,0 +1,1 @@
+ALTER TABLE "trip_searches" ADD COLUMN "running_since" timestamp with time zone;

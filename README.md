@@ -35,6 +35,7 @@ src/app, src/ui    pantallas y componentes
 - Confirmación, itinerario con zonas horarias y alertas, gastos reales, exportación CSV/.ics/PDF.
 - Enlaces públicos de solo lectura y duplicación de viajes.
 - Uso desde el celular (390 px), instalable como app (PWA), modo claro y oscuro.
+- Búsqueda automática en Opciones (con `SERPAPI_KEY`): vuelos de Google Flights y alojamiento de Google Hotels convertidos en tarjetas, sin carga manual; el vuelo de vuelta se completa al elegir una opción.
 - Radar de fuentes en Opciones: precios de referencia de Travelpayouts para 3 días antes y 3 después de la ida (con `TRAVELPAYOUTS_TOKEN`), enlaces que abren la misma búsqueda en 17 sitios y registro de los sitios ya revisados.
 
 ### Usa datos simulados
@@ -44,5 +45,6 @@ src/app, src/ui    pantallas y componentes
 - **Despliegue**: cuenta de GitHub y de Railway (ver `DEPLOY.md`).
 - **IA**: clave de la API de Claude en `ANTHROPIC_API_KEY` (ver `DEPLOY.md`). Sin clave, todo se carga a mano.
 - **Precios de referencia**: token de Travelpayouts en `TRAVELPAYOUTS_TOKEN` (ver `DEPLOY.md`). Sin token, el radar muestra solo los enlaces. Skyscanner, Booking, Airbnb y Vrbo todavía no se verificaron a mano.
-- **Más adelante**: "Compartir → TravelFlow" en Android, precios en tiempo real (Duffel u otra API), tipo de cambio automático, rutas reales.
+- **Búsqueda automática**: clave de SerpApi en `SERPAPI_KEY` (ver `DEPLOY.md`). Sin clave, la sección lo avisa y todo lo demás funciona igual.
+- **Más adelante**: "Compartir → TravelFlow" en Android, micros en la búsqueda automática, tipo de cambio automático, rutas reales.
 - **Fuera de este ciclo**: mapa logístico, comparación de destinos, división de gastos grupales, documentación con archivos, asistente de IA.

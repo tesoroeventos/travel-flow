@@ -187,8 +187,10 @@ export const transportOptions = pgTable("transport_options", {
   pairId: uuid("pair_id"),
   /** "En destino": si se suma a las propuestas. */
   inProposals: boolean("in_proposals").notNull().default(true),
-  /** captura | link | auto | manual */
+  /** captura | link | auto | manual | busqueda | busqueda_editada */
   source: text("source"),
+  /** Referencia del proveedor de búsqueda (departure_token de Google Flights). */
+  externalRef: text("external_ref"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -429,4 +431,21 @@ export const priceCache = pgTable("price_cache", {
   key: text("key").primaryKey(),
   payload: jsonb("payload").notNull(),
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
+});
+
+/* ───────── Búsqueda automática ───────── */
+
+/** Última búsqueda automática de cada viaje: evita repetir búsquedas con los mismos datos. */
+export const tripSearches = pgTable("trip_searches", {
+  tripId: uuid("trip_id")
+    .primaryKey()
+    .references(() => trips.id, { onDelete: "cascade" }),
+  paramsKey: text("params_key").notNull(),
+  searchedAt: timestamp("searched_at", { withTimezone: true }).notNull(),
+  flightsCount: integer("flights_count").notNull(),
+  lodgingCount: integer("lodging_count").notNull(),
+  missingAirlines: jsonb("missing_airlines").$type<string[]>().notNull().default([]),
+  error: text("error"),
+  /** Búsqueda en curso desde esta hora: otra pestaña o una recarga no la repite. */
+  runningSince: timestamp("running_since", { withTimezone: true }),
 });
