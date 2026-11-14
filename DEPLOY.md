@@ -44,9 +44,9 @@ Costo de referencia: leer una captura cuesta alrededor de 1 centavo de dólar (m
 
 La sección "Buscar en otros sitios" de Opciones muestra precios de referencia de Travelpayouts para los días cercanos a la ida. Sin token, la sección funciona igual pero solo con los enlaces.
 
-1. Registrate gratis en **travelpayouts.com**.
-2. En el panel, buscá el programa **Aviasales** y conectate.
-3. En la sección de API del panel copiá tu token (el nombre del menú puede cambiar).
+1. Registrate gratis en **travelpayouts.com**. Al registrarte quedás inscripto solo en el programa **Aviasales**: no hay que tocar ningún botón para unirse.
+2. Abrí el menú ≡, entrá a **Perfil (Profile)** y abrí la pestaña **API token**.
+3. Copiá el token. Es una clave privada: pegala solo en Railway.
 4. En Railway, en las variables de la app, agregá `TRAVELPAYOUTS_TOKEN` con ese token.
 
 Son precios que vieron otros usuarios en los últimos 2 a 7 días, nunca el precio final. La app los guarda 6 horas para no repetir consultas.
