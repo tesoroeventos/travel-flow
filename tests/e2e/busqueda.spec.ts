@@ -68,16 +68,22 @@ test.describe("búsqueda automática", () => {
     await expect(hotelLinks(page)).toHaveCount(6);
   });
 
-  test("recargar en medio de la búsqueda no busca de nuevo ni duplica", async ({ page }) => {
-    await createQuickTrip(page);
+  test("recargar en medio de la búsqueda no busca de nuevo ni duplica", async ({ page }, testInfo) => {
+    // Cantidad de personas propia de este intento: así no toma la respuesta guardada (6 h) de otra prueba
+    // y la búsqueda simulada tarda lo suficiente como para recargar en medio.
+    await createQuickTrip(page, { travelers: String(3 + testInfo.retry) });
     await chooseAirports(page);
     const auto = page.getByRole("region", { name: "Búsqueda automática" });
     await expect(auto.getByText("Buscando vuelos y alojamiento…")).toBeVisible();
     // Se recarga con la búsqueda en curso; la recargada no lanza otra (si termina antes, igual no duplica).
     await page.reload();
-    await expect(auto.getByText("✓ 5 vuelos y 6 alojamientos")).toBeVisible({ timeout: 15_000 });
+    // Con 3 o más personas quedan afuera los departamentos para 2: la cantidad sale del resumen.
+    const summary = auto.getByText(/^✓ 5 vuelos y \d+ alojamientos/);
+    await expect(summary).toBeVisible({ timeout: 15_000 });
+    const lodging = Number(/y (\d+) alojamientos/.exec((await summary.textContent()) ?? "")![1]);
+    expect(lodging).toBeGreaterThan(0);
     await expect(flightLinks(page)).toHaveCount(5);
-    await expect(hotelLinks(page)).toHaveCount(6);
+    await expect(hotelLinks(page)).toHaveCount(lodging);
   });
 
   test("sin aeropuertos no busca", async ({ page }) => {
