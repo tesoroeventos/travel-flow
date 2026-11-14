@@ -8,9 +8,11 @@ import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import { assertAiConfigSafe } from "../src/integrations/ai/guard";
 import { assertRadarConfigSafe } from "../src/integrations/radar/guard";
+import { assertSearchConfigSafe } from "../src/integrations/search/guard";
 
 assertAiConfigSafe(process.env);
 assertRadarConfigSafe(process.env);
+assertSearchConfigSafe(process.env);
 
 const url = process.env.DATABASE_URL;
 if (!url) {

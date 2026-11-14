@@ -1,17 +1,252 @@
 {
   "_nota": "Respuesta real de SerpApi (playground, 14/11/2026), recortada: 4 best_flights, 3 other_flights, price_insights y airports. Tokens acortados.",
-  "search_parameters": {"engine": "google_flights", "hl": "es", "gl": "ar", "departure_id": "EZE,AEP", "arrival_id": "BRC", "outbound_date": "2027-01-10", "return_date": "2027-01-16", "adults": 2, "currency": "ARS"},
+  "search_parameters": {
+    "engine": "google_flights",
+    "hl": "es",
+    "gl": "ar",
+    "departure_id": "EZE,AEP",
+    "arrival_id": "BRC",
+    "outbound_date": "2027-01-10",
+    "return_date": "2027-01-16",
+    "adults": 2,
+    "currency": "ARS"
+  },
   "best_flights": [
-    {"flights": [{"departure_airport": {"name": "Aeropuerto Internacional Ezeiza", "id": "EZE", "time": "2027-01-10 18:20"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 20:45"}, "duration": 145, "airplane": "Boeing 737", "airline": "Aerolíneas Argentinas", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "travel_class": "Economy", "flight_number": "AR 1682", "legroom": "81 cm", "extensions": ["Above average legroom (81 cm)", "In-seat USB outlet", "Carbon emissions estimate: 273 kg"]}], "total_duration": 145, "carbon_emissions": {"this_flight": 274000, "typical_for_this_route": 265000, "difference_percent": 3}, "price": 733920, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "departure_token": "tok-AR1682"},
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 19:15"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 21:36"}, "duration": 141, "airplane": "Airbus A321", "airline": "JetSMART", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png", "travel_class": "Economy", "flight_number": "JA 3055", "legroom": "71 cm", "extensions": ["Below average legroom (71 cm)", "Carbon emissions estimate: 232 kg"], "often_delayed_by_over_30_min": true, "plane_and_crew_by": "Jetsmart Airlines S.a."}], "total_duration": 141, "carbon_emissions": {"this_flight": 233000, "typical_for_this_route": 265000, "difference_percent": -12}, "price": 821437, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png", "departure_token": "tok-JA3055"},
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 19:20"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 21:45"}, "duration": 145, "airplane": "Boeing 737", "airline": "Aerolíneas Argentinas", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "travel_class": "Economy", "flight_number": "AR 1688", "legroom": "76 cm", "extensions": ["Average legroom (76 cm)", "Carbon emissions estimate: 263 kg"], "often_delayed_by_over_30_min": true}], "total_duration": 145, "carbon_emissions": {"this_flight": 263000, "typical_for_this_route": 265000, "difference_percent": -1}, "price": 867320, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "departure_token": "tok-AR1688"},
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 12:40"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 14:55"}, "duration": 135, "airplane": "Boeing 737", "airline": "Flybondi", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png", "travel_class": "Economy", "flight_number": "FO 5244", "extensions": ["Carbon emissions estimate: 236 kg"]}], "total_duration": 135, "carbon_emissions": {"this_flight": 236000, "typical_for_this_route": 265000, "difference_percent": -11}, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png", "departure_token": "tok-FO5244"}
+    {
+      "flights": [
+        {
+          "departure_airport": { "name": "Aeropuerto Internacional Ezeiza", "id": "EZE", "time": "2027-01-10 18:20" },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 20:45"
+          },
+          "duration": 145,
+          "airplane": "Boeing 737",
+          "airline": "Aerolíneas Argentinas",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+          "travel_class": "Economy",
+          "flight_number": "AR 1682",
+          "legroom": "81 cm",
+          "extensions": ["Above average legroom (81 cm)", "In-seat USB outlet", "Carbon emissions estimate: 273 kg"]
+        }
+      ],
+      "total_duration": 145,
+      "carbon_emissions": { "this_flight": 274000, "typical_for_this_route": 265000, "difference_percent": 3 },
+      "price": 733920,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+      "departure_token": "tok-AR1682"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 19:15"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 21:36"
+          },
+          "duration": 141,
+          "airplane": "Airbus A321",
+          "airline": "JetSMART",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png",
+          "travel_class": "Economy",
+          "flight_number": "JA 3055",
+          "legroom": "71 cm",
+          "extensions": ["Below average legroom (71 cm)", "Carbon emissions estimate: 232 kg"],
+          "often_delayed_by_over_30_min": true,
+          "plane_and_crew_by": "Jetsmart Airlines S.a."
+        }
+      ],
+      "total_duration": 141,
+      "carbon_emissions": { "this_flight": 233000, "typical_for_this_route": 265000, "difference_percent": -12 },
+      "price": 821437,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png",
+      "departure_token": "tok-JA3055"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 19:20"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 21:45"
+          },
+          "duration": 145,
+          "airplane": "Boeing 737",
+          "airline": "Aerolíneas Argentinas",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+          "travel_class": "Economy",
+          "flight_number": "AR 1688",
+          "legroom": "76 cm",
+          "extensions": ["Average legroom (76 cm)", "Carbon emissions estimate: 263 kg"],
+          "often_delayed_by_over_30_min": true
+        }
+      ],
+      "total_duration": 145,
+      "carbon_emissions": { "this_flight": 263000, "typical_for_this_route": 265000, "difference_percent": -1 },
+      "price": 867320,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+      "departure_token": "tok-AR1688"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 12:40"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 14:55"
+          },
+          "duration": 135,
+          "airplane": "Boeing 737",
+          "airline": "Flybondi",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png",
+          "travel_class": "Economy",
+          "flight_number": "FO 5244",
+          "extensions": ["Carbon emissions estimate: 236 kg"]
+        }
+      ],
+      "total_duration": 135,
+      "carbon_emissions": { "this_flight": 236000, "typical_for_this_route": 265000, "difference_percent": -11 },
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png",
+      "departure_token": "tok-FO5244"
+    }
   ],
   "other_flights": [
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 18:05"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 20:26"}, "duration": 141, "airplane": "Airbus A321", "airline": "JetSMART", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png", "travel_class": "Economy", "flight_number": "JA 3043", "legroom": "71 cm", "extensions": ["Below average legroom (71 cm)", "Carbon emissions estimate: 232 kg"], "plane_and_crew_by": "Jetsmart Airlines S.a."}], "total_duration": 141, "carbon_emissions": {"this_flight": 233000, "typical_for_this_route": 265000, "difference_percent": -12}, "price": 901940, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png", "departure_token": "tok-JA3043"},
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 05:25"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 07:50"}, "duration": 145, "airplane": "Boeing 737", "airline": "Aerolíneas Argentinas", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "travel_class": "Economy", "flight_number": "AR 1694", "legroom": "76 cm", "extensions": ["Average legroom (76 cm)", "Carbon emissions estimate: 263 kg"]}], "total_duration": 145, "carbon_emissions": {"this_flight": 263000, "typical_for_this_route": 265000, "difference_percent": -1}, "price": 1036051, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png", "departure_token": "tok-AR1694"},
-    {"flights": [{"departure_airport": {"name": "Aeroparque Internacional Jorge Newbery", "id": "AEP", "time": "2027-01-10 01:35"}, "arrival_airport": {"name": "Aeropuerto Internacional Teniente Luis Candelaria", "id": "BRC", "time": "2027-01-10 03:45"}, "duration": 130, "airplane": "Boeing 737", "airline": "Flybondi", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png", "travel_class": "Economy", "flight_number": "FO 5240", "extensions": ["Carbon emissions estimate: 236 kg"], "overnight": true}], "total_duration": 130, "carbon_emissions": {"this_flight": 236000, "typical_for_this_route": 265000, "difference_percent": -11}, "type": "Round trip", "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png", "departure_token": "tok-FO5240"}
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 18:05"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 20:26"
+          },
+          "duration": 141,
+          "airplane": "Airbus A321",
+          "airline": "JetSMART",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png",
+          "travel_class": "Economy",
+          "flight_number": "JA 3043",
+          "legroom": "71 cm",
+          "extensions": ["Below average legroom (71 cm)", "Carbon emissions estimate: 232 kg"],
+          "plane_and_crew_by": "Jetsmart Airlines S.a."
+        }
+      ],
+      "total_duration": 141,
+      "carbon_emissions": { "this_flight": 233000, "typical_for_this_route": 265000, "difference_percent": -12 },
+      "price": 901940,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JA.png",
+      "departure_token": "tok-JA3043"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 05:25"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 07:50"
+          },
+          "duration": 145,
+          "airplane": "Boeing 737",
+          "airline": "Aerolíneas Argentinas",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+          "travel_class": "Economy",
+          "flight_number": "AR 1694",
+          "legroom": "76 cm",
+          "extensions": ["Average legroom (76 cm)", "Carbon emissions estimate: 263 kg"]
+        }
+      ],
+      "total_duration": 145,
+      "carbon_emissions": { "this_flight": 263000, "typical_for_this_route": 265000, "difference_percent": -1 },
+      "price": 1036051,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AR.png",
+      "departure_token": "tok-AR1694"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aeroparque Internacional Jorge Newbery",
+            "id": "AEP",
+            "time": "2027-01-10 01:35"
+          },
+          "arrival_airport": {
+            "name": "Aeropuerto Internacional Teniente Luis Candelaria",
+            "id": "BRC",
+            "time": "2027-01-10 03:45"
+          },
+          "duration": 130,
+          "airplane": "Boeing 737",
+          "airline": "Flybondi",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png",
+          "travel_class": "Economy",
+          "flight_number": "FO 5240",
+          "extensions": ["Carbon emissions estimate: 236 kg"],
+          "overnight": true
+        }
+      ],
+      "total_duration": 130,
+      "carbon_emissions": { "this_flight": 236000, "typical_for_this_route": 265000, "difference_percent": -11 },
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/FO.png",
+      "departure_token": "tok-FO5240"
+    }
   ],
-  "price_insights": {"lowest_price": 733920, "price_level": "high", "typical_price_range": [405000, 700000]},
-  "airports": [{"departure": [{"airport": {"id": "EZE", "name": "Aeropuerto Internacional Ezeiza"}, "city": "Ciudad Autónoma de Buenos Aires", "country": "Argentina", "country_code": "AR"}, {"airport": {"id": "AEP", "name": "Aeroparque Internacional Jorge Newbery"}, "city": "Ciudad Autónoma de Buenos Aires", "country": "Argentina", "country_code": "AR"}], "arrival": [{"airport": {"id": "BRC", "name": "Aeropuerto Internacional Teniente Luis Candelaria"}, "city": "San Carlos de Bariloche", "country": "Argentina", "country_code": "AR"}]}]
+  "price_insights": { "lowest_price": 733920, "price_level": "high", "typical_price_range": [405000, 700000] },
+  "airports": [
+    {
+      "departure": [
+        {
+          "airport": { "id": "EZE", "name": "Aeropuerto Internacional Ezeiza" },
+          "city": "Ciudad Autónoma de Buenos Aires",
+          "country": "Argentina",
+          "country_code": "AR"
+        },
+        {
+          "airport": { "id": "AEP", "name": "Aeroparque Internacional Jorge Newbery" },
+          "city": "Ciudad Autónoma de Buenos Aires",
+          "country": "Argentina",
+          "country_code": "AR"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": { "id": "BRC", "name": "Aeropuerto Internacional Teniente Luis Candelaria" },
+          "city": "San Carlos de Bariloche",
+          "country": "Argentina",
+          "country_code": "AR"
+        }
+      ]
+    }
+  ]
 }

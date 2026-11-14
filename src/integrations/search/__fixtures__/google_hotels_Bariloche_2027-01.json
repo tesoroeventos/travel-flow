@@ -1,13 +1,150 @@
 {
   "_nota": "Respuesta real de SerpApi (playground, 14/11/2026), recortada a 6 de 20 propiedades. property_token acortados. La respuesta real trae además brands, ads (9), images y serpapi_pagination.",
-  "search_parameters": {"engine": "google_hotels", "q": "Bariloche", "gl": "ar", "hl": "es", "currency": "ARS", "check_in_date": "2027-01-10", "check_out_date": "2027-01-16", "adults": 2, "children": 0},
-  "search_information": {"total_results": 5061},
+  "search_parameters": {
+    "engine": "google_hotels",
+    "q": "Bariloche",
+    "gl": "ar",
+    "hl": "es",
+    "currency": "ARS",
+    "check_in_date": "2027-01-10",
+    "check_out_date": "2027-01-16",
+    "adults": 2,
+    "children": 0
+  },
+  "search_information": { "total_results": 5061 },
   "properties": [
-    {"type": "vacation rental", "name": "Lagos del Sur", "property_token": "tok-1", "gps_coordinates": {"latitude": -41.125770568847656, "longitude": -71.35726165771484}, "check_in_time": "15:00", "rate_per_night": {"lowest": "$ 126.617", "extracted_lowest": 126617, "display_price": "$ 126.617", "extracted_display_price": 126617}, "total_rate": {"lowest": "$ 759.705", "extracted_lowest": 759705, "display_price": "$ 759.705", "extracted_display_price": 759705}, "prices": [{"source": "Expedia.es", "num_guests": 2, "rate_per_night": {"lowest": "$ 126.617", "extracted_lowest": 126617}}], "overall_rating": 4.480275, "reviews": 109, "essential_info": ["Capacidad para 2", "1 dormitorio", "1 baño", "1 cama"], "amenities": ["Traslado del/al aeropuerto", "Calefacción", "Libre de humos", "Lavadora", "Wi‑Fi gratis"]},
-    {"type": "vacation rental", "name": "Suizo II departamento romantico con espectacular vista al lago Nahuel Huapi", "property_token": "tok-2", "gps_coordinates": {"latitude": -41.13489532470703, "longitude": -71.31529998779297}, "check_in_time": "16:00", "rate_per_night": {"lowest": "$ 147.511", "extracted_lowest": 147511}, "total_rate": {"lowest": "$ 885.064", "extracted_lowest": 885064}, "prices": [{"source": "Expedia.es", "num_guests": 2, "free_cancellation": true, "free_cancellation_until_date": "27 dic", "free_cancellation_until_time": "23:59", "rate_per_night": {"lowest": "$ 147.511", "extracted_lowest": 147511}}], "essential_info": ["Todo el apartamento", "Capacidad para 2", "1 baño", "1 cama", "27 m²"], "amenities": ["Balcón", "Ascensor", "Calefacción", "Cocina", "Microondas"]},
-    {"type": "vacation rental", "name": "Nahuel Departamentos", "link": "https://www.alquilerargentina.com/alojamientos/h9sl-Departamento-Nahuel-Departamentos-San-Carlos-De-Bariloche.html", "property_token": "tok-3", "gps_coordinates": {"latitude": -41.15037155151367, "longitude": -71.30011749267578}, "check_in_time": "15:00", "rate_per_night": {"lowest": "$ 100.000", "extracted_lowest": 100000}, "total_rate": {"lowest": "$ 600.000", "extracted_lowest": 600000}, "prices": [{"source": "AlquilerArgentina", "num_guests": 2, "rate_per_night": {"lowest": "$ 100.000", "extracted_lowest": 100000}}], "overall_rating": 4.91, "reviews": 32, "essential_info": ["Todo el apartamento", "Capacidad para 6", "2 dormitorios", "1 baño"], "amenities": ["Adecuado para niños", "Cuna", "Calefacción", "Aparcamiento gratuito"]},
-    {"type": "vacation rental", "name": "Bariloche Center Depto 229 Pleno Centro - Vista al Lago - Co", "link": "https://www.alquilerargentina.com/alojamientos/zu43-Departamento-Bariloche-Center-Depto-229-Pleno-Centro-Vista-al-Lago-Co-San-Carlos-De-Bariloche.html", "property_token": "tok-4", "gps_coordinates": {"latitude": -41.13441467285156, "longitude": -71.31193542480469}, "check_in_time": "14:00", "rate_per_night": {"lowest": "$ 70.000", "extracted_lowest": 70000}, "total_rate": {"lowest": "$ 420.000", "extracted_lowest": 420000}, "prices": [{"source": "AlquilerArgentina", "num_guests": 2, "rate_per_night": {"lowest": "$ 70.000", "extracted_lowest": 70000}}], "overall_rating": 4.9, "reviews": 21, "essential_info": ["Todo el apartamento", "Capacidad para 5", "1 baño"], "amenities": ["Adecuado para niños", "Cuna", "Calefacción", "Microondas", "Se admiten mascotas"]},
-    {"type": "vacation rental", "name": "Aires de Bariloche - Apartment with Lake View", "link": "https://www.bluepillow.es/search/5a85010c7c00cb0e042c61bd?dest=bkng&cat=House&lat=-41.13421&lng=-71.31205&language=es", "property_token": "tok-5", "gps_coordinates": {"latitude": -41.13420867919922, "longitude": -71.31204986572266}, "check_in_time": "14:00", "rate_per_night": {"lowest": "$ 129.565", "extracted_lowest": 129565}, "total_rate": {"lowest": "$ 777.390", "extracted_lowest": 777390}, "prices": [{"source": "Bluepillow.co.uk", "num_guests": 2, "free_cancellation": true, "free_cancellation_until_date": "29 nov", "free_cancellation_until_time": "2:59", "rate_per_night": {"lowest": "$ 129.565", "extracted_lowest": 129565}}], "overall_rating": 5, "reviews": 8, "essential_info": ["Toda la casa", "Capacidad para 3", "1 dormitorio", "1 baño", "2 camas"], "amenities": ["Cocina", "Libre de humos", "Televisión por cable", "Aparcamiento gratuito"]},
-    {"type": "hotel", "name": "Tangoinn Hostel Downtown Bariloche", "link": "http://www.tangoinn.com/", "property_token": "tok-6", "gps_coordinates": {"latitude": -41.1338709, "longitude": -71.3179567}, "check_in_time": "14:00", "hotel_class": "Hotel de 2 estrellas", "extracted_hotel_class": 2, "rate_per_night": {"lowest": "$ 90.000", "extracted_lowest": 90000}, "total_rate": {"lowest": "$ 540.000", "extracted_lowest": 540000}, "prices": [], "overall_rating": 4.1, "reviews": 686, "amenities": ["Free breakfast", "Free Wi-Fi", "Parking ($)", "Hot tub", "Spa", "Bar"]}
+    {
+      "type": "vacation rental",
+      "name": "Lagos del Sur",
+      "property_token": "tok-1",
+      "gps_coordinates": { "latitude": -41.125770568847656, "longitude": -71.35726165771484 },
+      "check_in_time": "15:00",
+      "rate_per_night": {
+        "lowest": "$ 126.617",
+        "extracted_lowest": 126617,
+        "display_price": "$ 126.617",
+        "extracted_display_price": 126617
+      },
+      "total_rate": {
+        "lowest": "$ 759.705",
+        "extracted_lowest": 759705,
+        "display_price": "$ 759.705",
+        "extracted_display_price": 759705
+      },
+      "prices": [
+        {
+          "source": "Expedia.es",
+          "num_guests": 2,
+          "rate_per_night": { "lowest": "$ 126.617", "extracted_lowest": 126617 }
+        }
+      ],
+      "overall_rating": 4.480275,
+      "reviews": 109,
+      "essential_info": ["Capacidad para 2", "1 dormitorio", "1 baño", "1 cama"],
+      "amenities": ["Traslado del/al aeropuerto", "Calefacción", "Libre de humos", "Lavadora", "Wi‑Fi gratis"]
+    },
+    {
+      "type": "vacation rental",
+      "name": "Suizo II departamento romantico con espectacular vista al lago Nahuel Huapi",
+      "property_token": "tok-2",
+      "gps_coordinates": { "latitude": -41.13489532470703, "longitude": -71.31529998779297 },
+      "check_in_time": "16:00",
+      "rate_per_night": { "lowest": "$ 147.511", "extracted_lowest": 147511 },
+      "total_rate": { "lowest": "$ 885.064", "extracted_lowest": 885064 },
+      "prices": [
+        {
+          "source": "Expedia.es",
+          "num_guests": 2,
+          "free_cancellation": true,
+          "free_cancellation_until_date": "27 dic",
+          "free_cancellation_until_time": "23:59",
+          "rate_per_night": { "lowest": "$ 147.511", "extracted_lowest": 147511 }
+        }
+      ],
+      "essential_info": ["Todo el apartamento", "Capacidad para 2", "1 baño", "1 cama", "27 m²"],
+      "amenities": ["Balcón", "Ascensor", "Calefacción", "Cocina", "Microondas"]
+    },
+    {
+      "type": "vacation rental",
+      "name": "Nahuel Departamentos",
+      "link": "https://www.alquilerargentina.com/alojamientos/h9sl-Departamento-Nahuel-Departamentos-San-Carlos-De-Bariloche.html",
+      "property_token": "tok-3",
+      "gps_coordinates": { "latitude": -41.15037155151367, "longitude": -71.30011749267578 },
+      "check_in_time": "15:00",
+      "rate_per_night": { "lowest": "$ 100.000", "extracted_lowest": 100000 },
+      "total_rate": { "lowest": "$ 600.000", "extracted_lowest": 600000 },
+      "prices": [
+        {
+          "source": "AlquilerArgentina",
+          "num_guests": 2,
+          "rate_per_night": { "lowest": "$ 100.000", "extracted_lowest": 100000 }
+        }
+      ],
+      "overall_rating": 4.91,
+      "reviews": 32,
+      "essential_info": ["Todo el apartamento", "Capacidad para 6", "2 dormitorios", "1 baño"],
+      "amenities": ["Adecuado para niños", "Cuna", "Calefacción", "Aparcamiento gratuito"]
+    },
+    {
+      "type": "vacation rental",
+      "name": "Bariloche Center Depto 229 Pleno Centro - Vista al Lago - Co",
+      "link": "https://www.alquilerargentina.com/alojamientos/zu43-Departamento-Bariloche-Center-Depto-229-Pleno-Centro-Vista-al-Lago-Co-San-Carlos-De-Bariloche.html",
+      "property_token": "tok-4",
+      "gps_coordinates": { "latitude": -41.13441467285156, "longitude": -71.31193542480469 },
+      "check_in_time": "14:00",
+      "rate_per_night": { "lowest": "$ 70.000", "extracted_lowest": 70000 },
+      "total_rate": { "lowest": "$ 420.000", "extracted_lowest": 420000 },
+      "prices": [
+        {
+          "source": "AlquilerArgentina",
+          "num_guests": 2,
+          "rate_per_night": { "lowest": "$ 70.000", "extracted_lowest": 70000 }
+        }
+      ],
+      "overall_rating": 4.9,
+      "reviews": 21,
+      "essential_info": ["Todo el apartamento", "Capacidad para 5", "1 baño"],
+      "amenities": ["Adecuado para niños", "Cuna", "Calefacción", "Microondas", "Se admiten mascotas"]
+    },
+    {
+      "type": "vacation rental",
+      "name": "Aires de Bariloche - Apartment with Lake View",
+      "link": "https://www.bluepillow.es/search/5a85010c7c00cb0e042c61bd?dest=bkng&cat=House&lat=-41.13421&lng=-71.31205&language=es",
+      "property_token": "tok-5",
+      "gps_coordinates": { "latitude": -41.13420867919922, "longitude": -71.31204986572266 },
+      "check_in_time": "14:00",
+      "rate_per_night": { "lowest": "$ 129.565", "extracted_lowest": 129565 },
+      "total_rate": { "lowest": "$ 777.390", "extracted_lowest": 777390 },
+      "prices": [
+        {
+          "source": "Bluepillow.co.uk",
+          "num_guests": 2,
+          "free_cancellation": true,
+          "free_cancellation_until_date": "29 nov",
+          "free_cancellation_until_time": "2:59",
+          "rate_per_night": { "lowest": "$ 129.565", "extracted_lowest": 129565 }
+        }
+      ],
+      "overall_rating": 5,
+      "reviews": 8,
+      "essential_info": ["Toda la casa", "Capacidad para 3", "1 dormitorio", "1 baño", "2 camas"],
+      "amenities": ["Cocina", "Libre de humos", "Televisión por cable", "Aparcamiento gratuito"]
+    },
+    {
+      "type": "hotel",
+      "name": "Tangoinn Hostel Downtown Bariloche",
+      "link": "http://www.tangoinn.com/",
+      "property_token": "tok-6",
+      "gps_coordinates": { "latitude": -41.1338709, "longitude": -71.3179567 },
+      "check_in_time": "14:00",
+      "hotel_class": "Hotel de 2 estrellas",
+      "extracted_hotel_class": 2,
+      "rate_per_night": { "lowest": "$ 90.000", "extracted_lowest": 90000 },
+      "total_rate": { "lowest": "$ 540.000", "extracted_lowest": 540000 },
+      "prices": [],
+      "overall_rating": 4.1,
+      "reviews": 686,
+      "amenities": ["Free breakfast", "Free Wi-Fi", "Parking ($)", "Hot tub", "Spa", "Bar"]
+    }
   ]
 }
