@@ -75,3 +75,41 @@ describe("updateTrip", () => {
     expect((await makeRepos(db).stops.list(ctx, trip.id)).map((s) => s.label)).toEqual(["B", "C"]);
   });
 });
+
+describe("updateTrip y los códigos de aeropuerto del radar", () => {
+  const edit = (patch: Partial<typeof form>) => ({
+    trip: { ...form, ...patch },
+    stops: [],
+    preferences: {},
+    constraints: {},
+  });
+
+  it("borra el código del destino si cambia el destino y conserva el del origen", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const trip = await createTrip(db, ctx, edit({}));
+    await makeRepos(db).trips.update(ctx, trip.id, { originIata: "BUE", destinationIata: "BRC" });
+    const updated = await updateTrip(db, ctx, trip.id, edit({ destinationLabel: "Mendoza" }));
+    expect(updated.destinationIata).toBeNull();
+    expect(updated.originIata).toBe("BUE");
+  });
+
+  it("borra el código del origen si cambia el origen", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const trip = await createTrip(db, ctx, edit({}));
+    await makeRepos(db).trips.update(ctx, trip.id, { originIata: "BUE", destinationIata: "BRC" });
+    const updated = await updateTrip(db, ctx, trip.id, edit({ originLabel: "Córdoba" }));
+    expect(updated.originIata).toBeNull();
+    expect(updated.destinationIata).toBe("BRC");
+  });
+
+  it("los conserva si origen y destino no cambian", async () => {
+    const db = await createTestDb();
+    const ctx = await makeCtx(db);
+    const trip = await createTrip(db, ctx, edit({}));
+    await makeRepos(db).trips.update(ctx, trip.id, { originIata: "BUE", destinationIata: "BRC" });
+    const updated = await updateTrip(db, ctx, trip.id, edit({ name: "Otro nombre" }));
+    expect([updated.originIata, updated.destinationIata]).toEqual(["BUE", "BRC"]);
+  });
+});

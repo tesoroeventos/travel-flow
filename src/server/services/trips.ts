@@ -32,7 +32,14 @@ export async function createTrip(db: Db, ctx: Ctx, f: TripForm): Promise<Trip> {
 
 export async function updateTrip(db: Db, ctx: Ctx, tripId: string, f: TripForm): Promise<Trip> {
   const r = makeRepos(db);
-  const trip = await r.trips.update(ctx, tripId, tripColumns(f));
+  const before = await r.trips.require(ctx, tripId);
+  const cols = tripColumns(f);
+  // Si cambia el origen o el destino, el código de aeropuerto del radar ya no corresponde.
+  const iata = {
+    ...(cols.originLabel !== before.originLabel ? { originIata: null } : {}),
+    ...(cols.destinationLabel !== before.destinationLabel ? { destinationIata: null } : {}),
+  };
+  const trip = await r.trips.update(ctx, tripId, { ...cols, ...iata });
   await setTravelerCounts(db, ctx, tripId, f.trip);
   await replaceStops(db, ctx, tripId, f.stops);
   return trip;

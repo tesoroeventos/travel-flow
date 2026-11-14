@@ -15,6 +15,13 @@
       "when": 1792075445194,
       "tag": "0001_carga_rapida",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794632200940,
+      "tag": "0002_radar",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 Plataforma de planificación y logística de viajes: compará combinaciones completas de transporte, alojamiento y actividades con el **costo real puerta a puerta**, elegí la que te conviene y generá el itinerario desde que salís de casa hasta que volvés.
 
-Diseño: `docs/superpowers/specs/2026-10-14-travelflow-design.md` (MVP) y `docs/superpowers/specs/2026-10-15-carga-rapida-design.md` (carga rápida). Despliegue: `DEPLOY.md`.
+Diseño: `docs/superpowers/specs/2026-10-14-travelflow-design.md` (MVP), `docs/superpowers/specs/2026-10-15-carga-rapida-design.md` (carga rápida) y `docs/superpowers/specs/2026-11-14-radar-de-fuentes-design.md` (radar de fuentes). Despliegue: `DEPLOY.md`.
 
 ## Qué hace
 
@@ -35,6 +35,7 @@ src/app, src/ui    pantallas y componentes
 - Confirmación, itinerario con zonas horarias y alertas, gastos reales, exportación CSV/.ics/PDF.
 - Enlaces públicos de solo lectura y duplicación de viajes.
 - Uso desde el celular (390 px), instalable como app (PWA), modo claro y oscuro.
+- Radar de fuentes en Opciones: precios de referencia de Travelpayouts para 3 días antes y 3 después de la ida (con `TRAVELPAYOUTS_TOKEN`), enlaces que abren la misma búsqueda en 17 sitios y registro de los sitios ya revisados.
 
 ### Usa datos simulados
 - El viaje de demostración Buenos Aires → Bariloche (3 escenarios): todos sus precios llevan la marca "Dato de demostración" y la página muestra "Precios ficticios".
@@ -42,5 +43,6 @@ src/app, src/ui    pantallas y componentes
 ### Requiere credenciales o servicios externos
 - **Despliegue**: cuenta de GitHub y de Railway (ver `DEPLOY.md`).
 - **IA**: clave de la API de Claude en `ANTHROPIC_API_KEY` (ver `DEPLOY.md`). Sin clave, todo se carga a mano.
-- **Más adelante**: "Compartir → TravelFlow" en Android, búsqueda automática de vuelos y hoteles, tipo de cambio automático, rutas reales.
+- **Precios de referencia**: token de Travelpayouts en `TRAVELPAYOUTS_TOKEN` (ver `DEPLOY.md`). Sin token, el radar muestra solo los enlaces. Skyscanner, Booking, Airbnb y Vrbo todavía no se verificaron a mano.
+- **Más adelante**: "Compartir → TravelFlow" en Android, precios en tiempo real (Duffel u otra API), tipo de cambio automático, rutas reales.
 - **Fuera de este ciclo**: mapa logístico, comparación de destinos, división de gastos grupales, documentación con archivos, asistente de IA.

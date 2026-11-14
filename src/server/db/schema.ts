@@ -106,6 +106,8 @@ export const trips = pgTable(
     originLabel: text("origin_label").notNull(),
     homeLabel: text("home_label"),
     destinationLabel: text("destination_label").notNull(),
+    originIata: text("origin_iata"),
+    destinationIata: text("destination_iata"),
     alternativeDestinations: jsonb("alternative_destinations").$type<string[]>().notNull().default([]),
     startAt: timestamp("start_at", { withTimezone: true }).notNull(),
     startTz: text("start_tz").notNull(),
@@ -408,3 +410,23 @@ export const aiUsage = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.day] })],
 );
+
+/* ───────── Radar de fuentes ───────── */
+
+export const radarChecks = pgTable(
+  "radar_checks",
+  {
+    tripId: uuid("trip_id")
+      .notNull()
+      .references(() => trips.id, { onDelete: "cascade" }),
+    siteId: text("site_id").notNull(),
+    openedAt: timestamp("opened_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.tripId, t.siteId] })],
+);
+
+export const priceCache = pgTable("price_cache", {
+  key: text("key").primaryKey(),
+  payload: jsonb("payload").notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
+});

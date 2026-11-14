@@ -57,10 +57,7 @@ export interface LodgingSearchProvider {
 }
 
 export interface ExchangeRateProvider {
-  latest(
-    from: Currency,
-    to: Currency,
-  ): Promise<Result<ProviderResult<ExchangeRate>>>;
+  latest(from: Currency, to: Currency): Promise<Result<ProviderResult<ExchangeRate>>>;
 }
 
 export interface RoutingProvider {
@@ -68,9 +65,7 @@ export interface RoutingProvider {
     from: { lat: number; lng: number },
     to: { lat: number; lng: number },
     mode: "driving" | "walking" | "transit",
-  ): Promise<
-    Result<ProviderResult<{ distanceKm: number; durationMin: number }>>
-  >;
+  ): Promise<Result<ProviderResult<{ distanceKm: number; durationMin: number }>>>;
 }
 
 export interface Providers {
@@ -78,4 +73,38 @@ export interface Providers {
   lodging: LodgingSearchProvider;
   rates: ExchangeRateProvider;
   routing: RoutingProvider;
+}
+
+/** Precio de referencia: visto por otros usuarios en los últimos días, nunca precio final. */
+export interface ReferenceFare {
+  /** Día de salida, YYYY-MM-DD. */
+  date: string;
+  amountCents: number;
+  currency: Currency;
+  airline: string | null;
+  transfers: number | null;
+  /** Cuándo lo vio el usuario que buscó, si la fuente lo dice. */
+  foundAt: string | null;
+  /** true si solo hay precio de ida. */
+  oneWay: boolean;
+}
+
+export interface ReferencePlace {
+  code: string;
+  name: string;
+  kind: "city" | "airport";
+}
+
+export interface ReferencePriceProvider {
+  /** Un ReferenceFare por día con datos; los días sin datos no aparecen. */
+  calendar(q: {
+    origin: string;
+    destination: string;
+    depart: string;
+    return: string;
+    windowDays: number;
+    currency: string;
+    today: string;
+  }): Promise<Result<ProviderResult<ReferenceFare[]>>>;
+  places(term: string): Promise<Result<ProviderResult<ReferencePlace[]>>>;
 }
