@@ -9,7 +9,7 @@ import { fmtDay, fmtRange, plural } from "../format";
 import { Icon } from "../icons";
 import { AirportPicker } from "./AirportPicker";
 import { FareCalendar } from "./FareCalendar";
-import { siteButtons } from "./view";
+import { KIDS_NOTE, siteButtons } from "./view";
 
 type Check = { siteId: string; openedAt: string };
 
@@ -131,13 +131,25 @@ export function RadarPanel({
                       >
                         {s.checked && <Icon name="check" className="size-4" />}
                         {s.name}
+                        {s.note === RADAR_MESSAGES.no_prefill && (
+                          <span title={s.note} className="text-ink-soft">
+                            <Icon name="info" className="size-4" />
+                            <span className="sr-only">{s.note}</span>
+                          </span>
+                        )}
                         {s.checked && <span className="sr-only">(revisado)</span>}
                       </a>
-                      {s.note && <span className="max-w-44 pt-0.5 text-xs text-signal">{s.note}</span>}
+                      {s.note === KIDS_NOTE && <span className="pt-0.5 text-xs text-signal">{s.note}</span>}
                     </li>
                   ) : null,
                 )}
               </ul>
+              {g.sites.some((s) => s.url && s.note === RADAR_MESSAGES.no_prefill) && (
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-signal">
+                  <Icon name="info" className="size-3.5" />
+                  {RADAR_MESSAGES.no_prefill}
+                </p>
+              )}
             </section>
           ))}
         </div>
@@ -151,9 +163,9 @@ export function RadarPanel({
                 <button
                   type="button"
                   className="font-bold text-route"
-                  onClick={() => {
-                    setChecks([]);
-                    void resetRadarChecks(tripId).catch(() => {});
+                  onClick={async () => {
+                    const r = await resetRadarChecks(tripId).catch(() => null);
+                    if (r?.ok) setChecks([]);
                   }}
                 >
                   Empezar de nuevo

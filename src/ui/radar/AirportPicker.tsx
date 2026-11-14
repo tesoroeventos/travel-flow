@@ -39,9 +39,9 @@ function Field({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value.toUpperCase().slice(0, 3))}
-        placeholder="BUE"
+        placeholder="3 letras"
         autoCapitalize="characters"
-        className="min-h-12 w-28 rounded-xl border-[1.5px] border-line bg-surface px-3 font-bold uppercase tracking-wider"
+        className="min-h-12 w-28 rounded-xl border-[1.5px] border-line bg-surface px-3 font-bold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
       />
       {hints.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

@@ -40,6 +40,28 @@ Costo de referencia: leer una captura cuesta alrededor de 1 centavo de dólar (m
 
 `AI_FAKE=1` activa una IA simulada para las pruebas automáticas. La app no arranca si se usa en producción.
 
+## Precios de referencia (radar de fuentes)
+
+La sección "Buscar en otros sitios" de Opciones muestra precios de referencia de Travelpayouts para los días cercanos a la ida. Sin token, la sección funciona igual pero solo con los enlaces.
+
+1. Registrate gratis en **travelpayouts.com**.
+2. En el panel, buscá el programa **Aviasales** y conectate.
+3. En la sección de API del panel copiá tu token (el nombre del menú puede cambiar).
+4. En Railway, en las variables de la app, agregá `TRAVELPAYOUTS_TOKEN` con ese token.
+
+Son precios que vieron otros usuarios en los últimos 2 a 7 días, nunca el precio final. La app los guarda 6 horas para no repetir consultas.
+
+`RADAR_FAKE=1` activa precios simulados para las pruebas automáticas. La app no arranca si se usa en producción.
+
+### Verificar los enlaces a mano
+
+Cada sitio de `src/integrations/radar/sites.ts` tiene `verifiedAt`, la fecha en que se probó que la búsqueda llega completa. Con un viaje real, abrí cada botón y fijate que el sitio muestre origen, destino, fechas y personas:
+
+- Si llega bien, poné la fecha de hoy en `verifiedAt`.
+- Si abre el sitio sin la búsqueda, cambiá `prefills` a `false` y la dirección a la página principal (y actualizá su prueba en `sites.test.ts`).
+
+Verificados el 14/11/2026: Google Flights, Kayak y Despegar (vuelos). Falta probar: Skyscanner (terminó en su página de inicio en la prueba), Booking, Airbnb y Vrbo.
+
 ## 3. Códigos de invitación
 
 El registro solo funciona con código. Para crear uno desde tu computadora, con la `DATABASE_URL` pública de Railway:

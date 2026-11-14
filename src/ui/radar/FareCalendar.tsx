@@ -75,14 +75,14 @@ export function FareCalendar({
       <p className="text-sm text-ink-soft">
         {LABEL} <span className="whitespace-nowrap">({currency})</span>
       </p>
-      <ol className="flex gap-1.5 overflow-x-auto pb-1">
+      <ol className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
         {days.map((day) => {
           const f = byDay.get(day);
           const shownFare = f ? displayFare(f, baseCurrency, usdRate) : null;
           const isSel = day === selected;
           const isTrip = day === tripDepart;
           return (
-            <li key={day} className="min-w-[4.25rem] flex-1">
+            <li key={day}>
               <button
                 type="button"
                 onClick={() => onPick(day)}
